@@ -136,12 +136,17 @@ export default function App() {
       if (response.success) {
         setReplies(response.replies);
         console.log('Replies set:', response.replies);
+      } else {
+        // API 调用失败，设置空回复数组以显示错误状态
+        setReplies([]);
+        console.log('API failed:', response.error);
       }
     } catch (error) {
       console.error('Failed to generate replies:', error);
+      setReplies([]);
     } finally {
       setLoading(false);
-      console.log('Loading finished, showReplyList:', showReplyList);
+      console.log('Loading finished, showReplyList should still be true');
     }
   };
 
