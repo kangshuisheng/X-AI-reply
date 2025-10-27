@@ -31,45 +31,44 @@ export default function App() {
       const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
       if (replyBox && !cleanup) {
         const handleFocus = () => {
-          // 直接在回复框容器中添加按钮
-          const container = replyBox.closest('[data-testid="toolBar"]')?.parentElement;
+          // 直接在输入框容器中添加按钮
+          const container = replyBox.closest('[data-testid="tweetTextarea_0RichTextInputContainer"]');
           if (container && !container.querySelector('.ai-reply-button')) {
             const button = document.createElement('button');
             button.className = 'ai-reply-button';
             button.innerHTML = `
-              <svg style="width: 16px; height: 16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg style="width: 12px; height: 12px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             `;
             button.title = 'AI 回复';
             button.style.cssText = `
               position: absolute;
-              top: 50%;
-              right: 12px;
-              transform: translateY(-50%);
+              top: 4px;
+              right: 4px;
               z-index: 10;
               background: linear-gradient(135deg, #3b82f6, #8b5cf6);
               color: white;
-              padding: 8px;
-              border-radius: 8px;
+              padding: 6px;
+              border-radius: 6px;
               border: none;
               box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
               cursor: pointer;
               display: flex;
               align-items: center;
               justify-content: center;
-              width: 32px;
-              height: 32px;
+              width: 24px;
+              height: 24px;
               transition: all 0.2s ease;
             `;
 
             button.addEventListener('mouseenter', () => {
-              button.style.transform = 'translateY(-50%) scale(1.1)';
+              button.style.transform = 'scale(1.1)';
               button.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.5)';
             });
 
             button.addEventListener('mouseleave', () => {
-              button.style.transform = 'translateY(-50%) scale(1)';
+              button.style.transform = 'scale(1)';
               button.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.3)';
             });
 
