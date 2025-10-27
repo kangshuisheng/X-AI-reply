@@ -9,48 +9,14 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [currentTweetContent, setCurrentTweetContent] = useState('');
 
-  // 计算弹窗位置，确保不溢出屏幕
-  const calculatePopupPosition = (baseTop: number, baseLeft: number, popupWidth: number, popupHeight: number) => {
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const scrollTop = window.scrollY;
-
-    let top = baseTop;
-    let left = baseLeft - popupWidth;
-
-    // 检查右边界
-    if (left < 20) {
-      left = baseLeft + 50; // 显示在按钮右侧
-    }
-
-    // 检查左边界
-    if (left + popupWidth > viewportWidth - 20) {
-      left = viewportWidth - popupWidth - 20;
-    }
-
-    // 检查下边界
-    if (top + popupHeight > scrollTop + viewportHeight - 20) {
-      top = scrollTop + viewportHeight - popupHeight - 20;
-    }
-
-    // 检查上边界
-    if (top < scrollTop + 20) {
-      top = scrollTop + 20;
-    }
-
-    return { top, left };
-  };
-
   useEffect(() => {
     let cleanup: (() => void) | null = null;
     let currentUrl = window.location.href;
 
     const resetState = () => {
-      console.log('resetState called - URL changed');
       setShowToneSelector(false);
       setShowReplyList(false);
-      setReplies([]); // 清理回复数据
-      // 移除按钮
+      setReplies([]);
       const button = document.querySelector('.ai-reply-button');
       if (button) {
         button.remove();
@@ -181,7 +147,6 @@ export default function App() {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Element;
       if (!target.closest('#x-ai-reply-root')) {
-        console.log('Click outside detected, closing popups');
         setShowToneSelector(false);
         setShowReplyList(false);
       }
@@ -281,33 +246,26 @@ export default function App() {
   };
 
   const handleToneSelect = async (toneId: string) => {
-    console.log('handleToneSelect called with:', toneId);
     setShowToneSelector(false);
     setLoading(true);
     setShowReplyList(true);
-    console.log('State set: showReplyList=true, loading=true');
 
     try {
-      console.log('Sending message to background...');
       const response = await chrome.runtime.sendMessage({
         type: 'GENERATE_REPLY',
         payload: { tweetContent: currentTweetContent, toneId },
       });
-      console.log('Response received:', response);
 
       if (response.success) {
         setReplies(response.replies);
-        console.log('Replies set:', response.replies);
       } else {
         setReplies([]);
-        console.log('API failed, empty replies set');
       }
     } catch (error) {
       console.error('Failed to generate replies:', error);
       setReplies([]);
     } finally {
       setLoading(false);
-      console.log('Loading set to false');
     }
   };
 
@@ -347,19 +305,16 @@ export default function App() {
       setTimeout(() => successDiv.remove(), 2000);
     }
     setShowReplyList(false);
-    // 移除按钮
     const button = document.querySelector('.ai-reply-button');
     if (button) {
       button.remove();
     }
-    // 清理回复数据
     setReplies([]);
   };
 
   const handleClose = () => {
     setShowToneSelector(false);
     setShowReplyList(false);
-    // 清理回复数据，释放内存
     setReplies([]);
   };
 
@@ -368,30 +323,18 @@ export default function App() {
     setShowToneSelector(true);
   };
 
-  console.log('Render - showReplyList:', showReplyList, 'loading:', loading, 'replies:', replies);
-
   return (
     <>
       {showToneSelector && (
         <ToneSelector
-          position={calculatePopupPosition(
-            buttonPosition.top + 40,
-            buttonPosition.left,
-            300, // ToneSelector 宽度
-            Math.min(400, window.innerHeight - 100), // 动态高度，最大400px或屏幕高度-100px
-          )}
+          position={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
           onSelect={handleToneSelect}
           onClose={handleClose}
         />
       )}
       {showReplyList && (
         <ReplyList
-          position={calculatePopupPosition(
-            buttonPosition.top + 40,
-            buttonPosition.left,
-            420, // ReplyList 宽度
-            Math.min(500, window.innerHeight - 100), // 动态高度
-          )}
+          position={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
           replies={replies}
           loading={loading}
           onSelect={handleReplySelect}

@@ -1,7 +1,7 @@
 import { getSystemTheme, getThemeColors } from '../utils/theme';
 
 interface ReplyListProps {
-  position: { top: number; left: number };
+  position: { top: string; left: string; transform: string };
   replies: string[];
   loading: boolean;
   onSelect: (reply: string) => void;
@@ -20,6 +20,7 @@ export const ReplyList = ({ position, replies, loading, onSelect, onClose, onBac
         position: 'fixed',
         top: position.top,
         left: position.left,
+        transform: position.transform,
         zIndex: 100000,
         width: '420px',
         maxHeight: '500px',

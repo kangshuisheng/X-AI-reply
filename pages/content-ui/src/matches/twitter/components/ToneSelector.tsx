@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { ToneConfig } from '@extension/storage';
 
 interface ToneSelectorProps {
-  position: { top: number; left: number };
+  position: { top: string; left: string; transform: string };
   onSelect: (toneId: string) => void;
   onClose: () => void;
 }
@@ -34,6 +34,7 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
         position: 'fixed',
         top: position.top,
         left: position.left,
+        transform: position.transform,
         zIndex: 100000,
         width: '300px',
         maxHeight: '400px',
