@@ -1,11 +1,8 @@
-import { AIButton } from './components/AIButton';
 import { ReplyList } from './components/ReplyList';
 import { ToneSelector } from './components/ToneSelector';
 import { useEffect, useState } from 'react';
 
 export default function App() {
-  const [showButton, setShowButton] = useState(false);
-  const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 });
   const [showToneSelector, setShowToneSelector] = useState(false);
   const [showReplyList, setShowReplyList] = useState(false);
   const [replies, setReplies] = useState<string[]>([]);
@@ -50,10 +47,14 @@ export default function App() {
 
     const resetState = () => {
       console.log('resetState called - URL changed');
-      setShowButton(false);
       setShowToneSelector(false);
       setShowReplyList(false);
       setReplies([]); // 清理回复数据
+      // 移除按钮
+      const button = document.querySelector('.ai-reply-button');
+      if (button) {
+        button.remove();
+      }
       if (cleanup) {
         cleanup();
         cleanup = null;
@@ -64,14 +65,53 @@ export default function App() {
       const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
       if (replyBox && !cleanup) {
         const handleFocus = () => {
-          const rect = replyBox.getBoundingClientRect();
-          const position = {
-            top: rect.top + (rect.height - 32) / 2,
-            left: rect.right - 40,
-          };
+          // 直接在回复框容器中添加按钮
+          const container = replyBox.closest('[data-testid="toolBar"]')?.parentElement;
+          if (container && !container.querySelector('.ai-reply-button')) {
+            const button = document.createElement('button');
+            button.className = 'ai-reply-button';
+            button.innerHTML = `
+              <svg style="width: 16px; height: 16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            `;
+            button.title = 'AI 回复';
+            button.style.cssText = `
+              position: absolute;
+              top: 50%;
+              right: 12px;
+              transform: translateY(-50%);
+              z-index: 10;
+              background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+              color: white;
+              padding: 8px;
+              border-radius: 8px;
+              border: none;
+              box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 32px;
+              height: 32px;
+              transition: all 0.2s ease;
+            `;
 
-          setButtonPosition(position);
-          setShowButton(true);
+            button.addEventListener('mouseenter', () => {
+              button.style.transform = 'translateY(-50%) scale(1.1)';
+              button.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.5)';
+            });
+
+            button.addEventListener('mouseleave', () => {
+              button.style.transform = 'translateY(-50%) scale(1)';
+              button.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.3)';
+            });
+
+            button.addEventListener('click', handleAIButtonClick);
+
+            container.style.position = 'relative';
+            container.appendChild(button);
+          }
 
           const tweetText = document.querySelector('[data-testid="tweetText"]')?.textContent || '';
           const quotedTweet = document.querySelector('[data-testid="quotedTweet"]');
@@ -82,7 +122,10 @@ export default function App() {
         const handleBlur = () => {
           setTimeout(() => {
             if (!showToneSelector && !showReplyList) {
-              setShowButton(false);
+              const button = document.querySelector('.ai-reply-button');
+              if (button) {
+                button.remove();
+              }
             }
           }, 200);
         };
@@ -93,6 +136,11 @@ export default function App() {
         cleanup = () => {
           replyBox.removeEventListener('focus', handleFocus);
           replyBox.removeEventListener('blur', handleBlur);
+          // 移除按钮
+          const button = document.querySelector('.ai-reply-button');
+          if (button) {
+            button.remove();
+          }
           cleanup = null;
         };
       }
@@ -299,7 +347,11 @@ export default function App() {
       setTimeout(() => successDiv.remove(), 2000);
     }
     setShowReplyList(false);
-    setShowButton(false);
+    // 移除按钮
+    const button = document.querySelector('.ai-reply-button');
+    if (button) {
+      button.remove();
+    }
     // 清理回复数据
     setReplies([]);
   };
@@ -320,15 +372,6 @@ export default function App() {
 
   return (
     <>
-      {showButton && (
-        <AIButton
-          position={{
-            top: buttonPosition.top,
-            left: buttonPosition.left,
-          }}
-          onClick={handleAIButtonClick}
-        />
-      )}
       {showToneSelector && (
         <ToneSelector
           position={calculatePopupPosition(
