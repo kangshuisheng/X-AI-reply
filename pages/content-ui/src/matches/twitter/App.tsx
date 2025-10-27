@@ -107,7 +107,10 @@ export default function App() {
     };
 
     if (showToneSelector || showReplyList) {
-      document.addEventListener('click', handleClickOutside);
+      // 延迟添加事件监听器，避免立即触发
+      setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 100);
     } else {
       document.removeEventListener('click', handleClickOutside);
     }
