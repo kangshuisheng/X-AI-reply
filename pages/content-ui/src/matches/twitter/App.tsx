@@ -17,6 +17,7 @@ export default function App() {
     let currentUrl = window.location.href;
 
     const resetState = () => {
+      console.log('resetState called - URL changed');
       setShowButton(false);
       setShowToneSelector(false);
       setShowReplyList(false);
@@ -77,8 +78,10 @@ export default function App() {
     const observer = new MutationObserver(() => {
       // 只有在 URL 真正改变时才重置状态
       if (!checkUrlChange()) {
-        // URL 没变，只是 DOM 更新，继续设置监听器
-        setupReplyBoxListener();
+        // URL 没变，且没有显示弹窗时才设置监听器
+        if (!showToneSelector && !showReplyList) {
+          setupReplyBoxListener();
+        }
       }
     });
 
@@ -97,6 +100,7 @@ export default function App() {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Element;
       if (!target.closest('#x-ai-reply-root')) {
+        console.log('Click outside detected, closing popups');
         setShowToneSelector(false);
         setShowReplyList(false);
       }
@@ -104,6 +108,8 @@ export default function App() {
 
     if (showToneSelector || showReplyList) {
       document.addEventListener('click', handleClickOutside);
+    } else {
+      document.removeEventListener('click', handleClickOutside);
     }
 
     return () => {
