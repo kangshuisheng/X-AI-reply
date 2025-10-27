@@ -35,6 +35,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .catch(error => sendResponse({ hasApiKey: false, error: error.message }));
     return true;
   }
+
+  if (message.type === 'OPEN_OPTIONS') {
+    chrome.runtime.openOptionsPage();
+    return true;
+  }
 });
 
 const checkConfig = async () => {

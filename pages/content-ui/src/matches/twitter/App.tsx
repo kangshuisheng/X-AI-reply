@@ -177,7 +177,7 @@ export default function App() {
 
         cancelBtn?.addEventListener('click', () => confirmDiv.remove());
         configBtn?.addEventListener('click', () => {
-          chrome.runtime.openOptionsPage();
+          chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS' });
           confirmDiv.remove();
         });
 
