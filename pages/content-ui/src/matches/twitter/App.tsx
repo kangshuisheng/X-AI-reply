@@ -12,6 +12,38 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [currentTweetContent, setCurrentTweetContent] = useState('');
 
+  // 计算弹窗位置，确保不溢出屏幕
+  const calculatePopupPosition = (baseTop: number, baseLeft: number, popupWidth: number, popupHeight: number) => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const scrollTop = window.scrollY;
+
+    let top = baseTop;
+    let left = baseLeft - popupWidth;
+
+    // 检查右边界
+    if (left < 20) {
+      left = baseLeft + 50; // 显示在按钮右侧
+    }
+
+    // 检查左边界
+    if (left + popupWidth > viewportWidth - 20) {
+      left = viewportWidth - popupWidth - 20;
+    }
+
+    // 检查下边界
+    if (top + popupHeight > scrollTop + viewportHeight - 20) {
+      top = scrollTop + viewportHeight - popupHeight - 20;
+    }
+
+    // 检查上边界
+    if (top < scrollTop + 20) {
+      top = scrollTop + 20;
+    }
+
+    return { top, left };
+  };
+
   useEffect(() => {
     let cleanup: (() => void) | null = null;
     let currentUrl = window.location.href;
@@ -294,20 +326,24 @@ export default function App() {
       )}
       {showToneSelector && (
         <ToneSelector
-          position={{
-            top: buttonPosition.top + 40,
-            left: buttonPosition.left - 280,
-          }}
+          position={calculatePopupPosition(
+            buttonPosition.top + 40,
+            buttonPosition.left,
+            300, // ToneSelector 宽度
+            200, // 估计高度
+          )}
           onSelect={handleToneSelect}
           onClose={handleClose}
         />
       )}
       {showReplyList && (
         <ReplyList
-          position={{
-            top: buttonPosition.top + 40,
-            left: buttonPosition.left - 400,
-          }}
+          position={calculatePopupPosition(
+            buttonPosition.top + 40,
+            buttonPosition.left,
+            420, // ReplyList 宽度
+            500, // 最大高度
+          )}
           replies={replies}
           loading={loading}
           onSelect={handleReplySelect}
