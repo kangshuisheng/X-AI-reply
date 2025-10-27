@@ -53,6 +53,7 @@ export default function App() {
       setShowButton(false);
       setShowToneSelector(false);
       setShowReplyList(false);
+      setReplies([]); // 清理回复数据
       if (cleanup) {
         cleanup();
         cleanup = null;
@@ -299,11 +300,15 @@ export default function App() {
     }
     setShowReplyList(false);
     setShowButton(false);
+    // 清理回复数据
+    setReplies([]);
   };
 
   const handleClose = () => {
     setShowToneSelector(false);
     setShowReplyList(false);
+    // 清理回复数据，释放内存
+    setReplies([]);
   };
 
   const handleBackToTones = () => {
