@@ -74,7 +74,7 @@ export default function App() {
 
             button.addEventListener('click', handleAIButtonClick);
 
-            container.style.position = 'relative';
+            (container as HTMLElement).style.position = 'relative';
             container.appendChild(button);
           }
 
