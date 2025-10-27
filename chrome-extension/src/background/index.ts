@@ -28,7 +28,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
+
+  if (message.type === 'CHECK_CONFIG') {
+    checkConfig()
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ hasApiKey: false, error: error.message }));
+    return true;
+  }
 });
+
+const checkConfig = async () => {
+  const config = await configStorage.get();
+  const { selectedModel, apiKeys } = config.aiModel;
+  const hasApiKey = !!apiKeys[selectedModel];
+  return { hasApiKey };
+};
 
 const handleGenerateReply = async (payload: { tweetContent: string; toneId: string }) => {
   const config = await configStorage.get();

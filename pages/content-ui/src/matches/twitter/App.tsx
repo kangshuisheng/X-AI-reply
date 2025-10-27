@@ -17,7 +17,6 @@ export default function App() {
     let currentUrl = window.location.href;
 
     const resetState = () => {
-      console.log('Resetting state due to URL change');
       setShowButton(false);
       setShowToneSelector(false);
       setShowReplyList(false);
@@ -115,16 +114,86 @@ export default function App() {
     };
   }, [showToneSelector, showReplyList]);
 
-  const handleAIButtonClick = () => {
+  const handleAIButtonClick = async () => {
+    // 检查是否配置了 API key
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'CHECK_CONFIG' });
+      if (!response.hasApiKey) {
+        // 显示提示并跳转到配置页面
+        const confirmDiv = document.createElement('div');
+        confirmDiv.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 100001;
+            font-family: system-ui;
+            text-align: center;
+            max-width: 400px;
+          ">
+            <h3 style="margin: 0 0 16px 0; color: #1e293b;">🔑 需要配置 API Key</h3>
+            <p style="margin: 0 0 20px 0; color: #64748b; line-height: 1.5;">请先配置 AI 供应商的 API Key 才能使用智能回复功能</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+              <button id="cancel-config" style="
+                padding: 8px 16px;
+                background: #f1f5f9;
+                color: #64748b;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 500;
+              ">取消</button>
+              <button id="go-config" style="
+                padding: 8px 16px;
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: 500;
+              ">去配置</button>
+            </div>
+          </div>
+          <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100000;
+          "></div>
+        `;
+
+        document.body.appendChild(confirmDiv);
+
+        const cancelBtn = confirmDiv.querySelector('#cancel-config');
+        const configBtn = confirmDiv.querySelector('#go-config');
+
+        cancelBtn?.addEventListener('click', () => confirmDiv.remove());
+        configBtn?.addEventListener('click', () => {
+          chrome.runtime.openOptionsPage();
+          confirmDiv.remove();
+        });
+
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to check config:', error);
+    }
+
     setShowToneSelector(true);
   };
 
   const handleToneSelect = async (toneId: string) => {
-    console.log('Tone selected:', toneId);
     setShowToneSelector(false);
     setLoading(true);
     setShowReplyList(true);
-    console.log('Reply list should be visible now');
 
     try {
       const response = await chrome.runtime.sendMessage({
@@ -132,21 +201,16 @@ export default function App() {
         payload: { tweetContent: currentTweetContent, toneId },
       });
 
-      console.log('API response:', response);
       if (response.success) {
         setReplies(response.replies);
-        console.log('Replies set:', response.replies);
       } else {
-        // API 调用失败，设置空回复数组以显示错误状态
         setReplies([]);
-        console.log('API failed:', response.error);
       }
     } catch (error) {
       console.error('Failed to generate replies:', error);
       setReplies([]);
     } finally {
       setLoading(false);
-      console.log('Loading finished, showReplyList should still be true');
     }
   };
 
