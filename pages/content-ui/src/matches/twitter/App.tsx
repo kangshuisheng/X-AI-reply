@@ -14,6 +14,18 @@ export default function App() {
 
   useEffect(() => {
     let cleanup: (() => void) | null = null;
+    let currentUrl = window.location.href;
+
+    const resetState = () => {
+      console.log('Resetting state due to URL change');
+      setShowButton(false);
+      setShowToneSelector(false);
+      setShowReplyList(false);
+      if (cleanup) {
+        cleanup();
+        cleanup = null;
+      }
+    };
 
     const setupReplyBoxListener = () => {
       const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
@@ -53,15 +65,34 @@ export default function App() {
       }
     };
 
+    const checkUrlChange = () => {
+      if (window.location.href !== currentUrl) {
+        currentUrl = window.location.href;
+        resetState();
+        setTimeout(setupReplyBoxListener, 500);
+        return true;
+      }
+      return false;
+    };
+
     const observer = new MutationObserver(() => {
-      setupReplyBoxListener();
+      // 只有在 URL 真正改变时才重置状态
+      if (!checkUrlChange()) {
+        // URL 没变，只是 DOM 更新，继续设置监听器
+        setupReplyBoxListener();
+      }
     });
 
-    // 初始化时尝试设置
-    setupReplyBoxListener();
+    // 监听 popstate 事件（浏览器前进后退）
+    const handlePopState = () => {
+      resetState();
+      setTimeout(setupReplyBoxListener, 500);
+    };
 
-    // 监听 DOM 变化
+    // 初始化
+    setupReplyBoxListener();
     observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('popstate', handlePopState);
 
     // 点击外部关闭弹出框
     const handleClickOutside = (e: MouseEvent) => {
@@ -79,6 +110,7 @@ export default function App() {
     return () => {
       observer.disconnect();
       if (cleanup) cleanup();
+      window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('click', handleClickOutside);
     };
   }, [showToneSelector, showReplyList]);
@@ -88,9 +120,11 @@ export default function App() {
   };
 
   const handleToneSelect = async (toneId: string) => {
+    console.log('Tone selected:', toneId);
     setShowToneSelector(false);
     setLoading(true);
     setShowReplyList(true);
+    console.log('Reply list should be visible now');
 
     try {
       const response = await chrome.runtime.sendMessage({
@@ -98,13 +132,16 @@ export default function App() {
         payload: { tweetContent: currentTweetContent, toneId },
       });
 
+      console.log('API response:', response);
       if (response.success) {
         setReplies(response.replies);
+        console.log('Replies set:', response.replies);
       }
     } catch (error) {
       console.error('Failed to generate replies:', error);
     } finally {
       setLoading(false);
+      console.log('Loading finished, showReplyList:', showReplyList);
     }
   };
 
