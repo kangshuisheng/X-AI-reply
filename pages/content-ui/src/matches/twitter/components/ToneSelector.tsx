@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { ToneConfig } from '@extension/storage';
 
 interface ToneSelectorProps {
-  position: { top: string; left: string; transform: string };
+  position: { top: number; left: number; width: number };
   onSelect: (toneId: string) => void;
   onClose: () => void;
 }
@@ -34,16 +34,14 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
         position: 'fixed',
         top: position.top,
         left: position.left,
-        transform: position.transform,
         zIndex: 100000,
-        width: '300px',
-        maxHeight: '400px',
+        width: position.width,
         background: colors.background,
         backdropFilter: 'blur(12px)',
-        borderRadius: '16px',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+        borderRadius: '12px',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
         border: `1px solid ${colors.border}`,
-        padding: '20px',
+        padding: '16px',
         fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -70,11 +68,9 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
       </div>
       <div
         style={{
-          display: 'flex',
-          flexDirection: 'column',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '8px',
-          maxHeight: '300px',
-          overflowY: 'auto',
         }}>
         {tones.map(tone => (
           <button
@@ -82,16 +78,17 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
             onClick={() => onSelect(tone.id)}
             style={{
               width: '100%',
-              textAlign: 'left',
-              padding: '16px',
-              borderRadius: '12px',
+              textAlign: 'center',
+              padding: '12px 8px',
+              borderRadius: '8px',
               border: '1px solid transparent',
               background: colors.cardBg,
               cursor: 'pointer',
               transition: 'all 0.2s',
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: '12px',
+              gap: '6px',
             }}
             onMouseEnter={e => {
               e.currentTarget.style.background = colors.cardHover;
@@ -101,11 +98,8 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
               e.currentTarget.style.background = colors.cardBg;
               e.currentTarget.style.borderColor = 'transparent';
             }}>
-            <span style={{ fontSize: '24px' }}>{toneIcons[tone.id as keyof typeof toneIcons] || '🎭'}</span>
-            <div>
-              <div style={{ fontWeight: '600', color: colors.text, fontSize: '14px' }}>{tone.name}</div>
-              <div style={{ fontSize: '12px', color: colors.textSecondary, marginTop: '4px' }}>{tone.prompt}</div>
-            </div>
+            <span style={{ fontSize: '20px' }}>{toneIcons[tone.id as keyof typeof toneIcons] || '🎭'}</span>
+            <div style={{ fontWeight: '600', color: colors.text, fontSize: '12px' }}>{tone.name}</div>
           </button>
         ))}
       </div>

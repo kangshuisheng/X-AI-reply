@@ -9,6 +9,20 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [currentTweetContent, setCurrentTweetContent] = useState('');
 
+  // 获取输入框位置，用于定位弹窗
+  const getInputBoxPosition = () => {
+    const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
+    if (replyBox) {
+      const rect = replyBox.getBoundingClientRect();
+      return {
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+      };
+    }
+    return { top: 0, left: 0, width: 0 };
+  };
+
   useEffect(() => {
     let cleanup: (() => void) | null = null;
     let currentUrl = window.location.href;
@@ -325,15 +339,11 @@ export default function App() {
   return (
     <>
       {showToneSelector && (
-        <ToneSelector
-          position={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
-          onSelect={handleToneSelect}
-          onClose={handleClose}
-        />
+        <ToneSelector position={getInputBoxPosition()} onSelect={handleToneSelect} onClose={handleClose} />
       )}
       {showReplyList && (
         <ReplyList
-          position={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+          position={getInputBoxPosition()}
           replies={replies}
           loading={loading}
           onSelect={handleReplySelect}

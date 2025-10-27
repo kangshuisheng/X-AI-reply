@@ -1,7 +1,7 @@
 import { getSystemTheme, getThemeColors } from '../utils/theme';
 
 interface ReplyListProps {
-  position: { top: string; left: string; transform: string };
+  position: { top: number; left: number; width: number };
   replies: string[];
   loading: boolean;
   onSelect: (reply: string) => void;
@@ -20,16 +20,15 @@ export const ReplyList = ({ position, replies, loading, onSelect, onClose, onBac
         position: 'fixed',
         top: position.top,
         left: position.left,
-        transform: position.transform,
         zIndex: 100000,
-        width: '420px',
-        maxHeight: '500px',
+        width: position.width,
+        maxHeight: '400px',
         background: colors.background,
         backdropFilter: 'blur(12px)',
-        borderRadius: '16px',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+        borderRadius: '12px',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
         border: `1px solid ${colors.border}`,
-        padding: '24px',
+        padding: '16px',
         fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         overflow: 'hidden',
       }}>
