@@ -330,7 +330,7 @@ export default function App() {
             buttonPosition.top + 40,
             buttonPosition.left,
             300, // ToneSelector 宽度
-            200, // 估计高度
+            Math.min(400, window.innerHeight - 100), // 动态高度，最大400px或屏幕高度-100px
           )}
           onSelect={handleToneSelect}
           onClose={handleClose}
@@ -342,7 +342,7 @@ export default function App() {
             buttonPosition.top + 40,
             buttonPosition.left,
             420, // ReplyList 宽度
-            500, // 最大高度
+            Math.min(500, window.innerHeight - 100), // 动态高度
           )}
           replies={replies}
           loading={loading}

@@ -36,6 +36,7 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
         left: position.left,
         zIndex: 100000,
         width: '300px',
+        maxHeight: '400px',
         background: colors.background,
         backdropFilter: 'blur(12px)',
         borderRadius: '16px',
@@ -66,7 +67,14 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
           ✕
         </button>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          maxHeight: '300px',
+          overflowY: 'auto',
+        }}>
         {tones.map(tone => (
           <button
             key={tone.id}
