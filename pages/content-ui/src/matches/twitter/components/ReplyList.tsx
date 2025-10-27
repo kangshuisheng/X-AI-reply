@@ -7,9 +7,10 @@ interface ReplyListProps {
   onSelect: (reply: string) => void;
   onClose: () => void;
   onBack: () => void;
+  onRegenerate: () => void;
 }
 
-export const ReplyList = ({ position, replies, loading, onSelect, onClose, onBack }: ReplyListProps) => {
+export const ReplyList = ({ position, replies, loading, onSelect, onClose, onBack, onRegenerate }: ReplyListProps) => {
   const theme = getSystemTheme();
   const colors = getThemeColors(theme);
   return (
@@ -60,17 +61,47 @@ export const ReplyList = ({ position, replies, loading, onSelect, onClose, onBac
             ←
           </button>
           <h3 style={{ fontSize: '18px', fontWeight: '700', color: colors.text, margin: 0 }}>AI 智能回复</h3>
-          <span
-            style={{
-              padding: '4px 8px',
-              background: 'linear-gradient(135deg, #dbeafe, #e0e7ff)',
-              color: '#1d4ed8',
-              fontSize: '12px',
-              fontWeight: '600',
-              borderRadius: '12px',
-            }}>
-            {loading ? '生成中' : `${replies.length} 条`}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span
+              style={{
+                padding: '4px 8px',
+                background: 'linear-gradient(135deg, #dbeafe, #e0e7ff)',
+                color: '#1d4ed8',
+                fontSize: '12px',
+                fontWeight: '600',
+                borderRadius: '12px',
+              }}>
+              {loading ? '生成中' : `${replies.length} 条`}
+            </span>
+            {!loading && replies.length > 0 && (
+              <button
+                onClick={onRegenerate}
+                title="重新生成"
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '50%',
+                  background: colors.cardBg,
+                  border: `1px solid ${colors.cardBorder}`,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  color: colors.text,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = colors.cardHover;
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = colors.cardBg;
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}>
+                🔄
+              </button>
+            )}
+          </div>
         </div>
         <button
           onClick={onClose}

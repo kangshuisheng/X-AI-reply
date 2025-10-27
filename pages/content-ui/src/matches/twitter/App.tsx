@@ -8,6 +8,7 @@ export default function App() {
   const [replies, setReplies] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentTweetContent, setCurrentTweetContent] = useState('');
+  const [currentToneId, setCurrentToneId] = useState('');
 
   // 获取输入框位置，用于定位弹窗
   const getInputBoxPosition = () => {
@@ -259,6 +260,7 @@ export default function App() {
   };
 
   const handleToneSelect = async (toneId: string) => {
+    setCurrentToneId(toneId);
     setShowToneSelector(false);
     setLoading(true);
     setShowReplyList(true);
@@ -276,6 +278,27 @@ export default function App() {
       }
     } catch (error) {
       console.error('Failed to generate replies:', error);
+      setReplies([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    setLoading(true);
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'GENERATE_REPLY',
+        payload: { tweetContent: currentTweetContent, toneId: currentToneId },
+      });
+
+      if (response.success) {
+        setReplies(response.replies);
+      } else {
+        setReplies([]);
+      }
+    } catch (error) {
+      console.error('Failed to regenerate replies:', error);
       setReplies([]);
     } finally {
       setLoading(false);
@@ -349,6 +372,7 @@ export default function App() {
           onSelect={handleReplySelect}
           onClose={handleClose}
           onBack={handleBackToTones}
+          onRegenerate={handleRegenerate}
         />
       )}
     </>
