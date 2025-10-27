@@ -191,26 +191,33 @@ export default function App() {
   };
 
   const handleToneSelect = async (toneId: string) => {
+    console.log('handleToneSelect called with:', toneId);
     setShowToneSelector(false);
     setLoading(true);
     setShowReplyList(true);
+    console.log('State set: showReplyList=true, loading=true');
 
     try {
+      console.log('Sending message to background...');
       const response = await chrome.runtime.sendMessage({
         type: 'GENERATE_REPLY',
         payload: { tweetContent: currentTweetContent, toneId },
       });
+      console.log('Response received:', response);
 
       if (response.success) {
         setReplies(response.replies);
+        console.log('Replies set:', response.replies);
       } else {
         setReplies([]);
+        console.log('API failed, empty replies set');
       }
     } catch (error) {
       console.error('Failed to generate replies:', error);
       setReplies([]);
     } finally {
       setLoading(false);
+      console.log('Loading set to false');
     }
   };
 
@@ -262,6 +269,8 @@ export default function App() {
     setShowReplyList(false);
     setShowToneSelector(true);
   };
+
+  console.log('Render - showReplyList:', showReplyList, 'loading:', loading, 'replies:', replies);
 
   return (
     <>
