@@ -104,11 +104,19 @@ ${config.corpus.length > 0 ? `参考语料（模仿这种表达风格）：\n${c
 
   const data = await response.json();
   const content = data.choices[0]?.message?.content || '';
-  const replies = content
+  let replies = content
     .split('\n')
     .map((r: string) => r.trim())
     .filter((r: string) => r.length > 0 && r.length <= 280)
     .slice(0, config.replyCount);
+
+  // 如果选择了标签模式，在每个回复后面添加标签
+  if (config.selectedTagMode && config.tagModes) {
+    const tagMode = config.tagModes.find(m => m.id === config.selectedTagMode);
+    if (tagMode) {
+      replies = replies.map((reply: string) => reply + ' ' + tagMode.tags);
+    }
+  }
 
   return replies;
 };

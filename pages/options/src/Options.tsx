@@ -2,6 +2,7 @@ import '@src/Options.css';
 import { ApiConfig } from './components/ApiConfig';
 import { CorpusManager } from './components/CorpusManager';
 import { GeneralSettings } from './components/GeneralSettings';
+import { TagModeManager } from './components/TagModeManager';
 import { ToneManager } from './components/ToneManager';
 import { useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
 import { exampleThemeStorage } from '@extension/storage';
@@ -10,11 +11,12 @@ import { useState } from 'react';
 
 const Options = () => {
   const { isLight } = useStorage(exampleThemeStorage);
-  const [activeTab, setActiveTab] = useState<'api' | 'tone' | 'corpus' | 'general'>('api');
+  const [activeTab, setActiveTab] = useState<'api' | 'tone' | 'tagmode' | 'corpus' | 'general'>('api');
 
   const tabs = [
     { id: 'api' as const, label: 'AI 配置' },
     { id: 'tone' as const, label: '语气管理' },
+    { id: 'tagmode' as const, label: '标签模式' },
     { id: 'corpus' as const, label: '语料库' },
     { id: 'general' as const, label: '通用设置' },
   ];
@@ -104,6 +106,7 @@ const Options = () => {
         <div style={{ ...cardStyle, padding: '32px' }}>
           {activeTab === 'api' && <ApiConfig />}
           {activeTab === 'tone' && <ToneManager />}
+          {activeTab === 'tagmode' && <TagModeManager />}
           {activeTab === 'corpus' && <CorpusManager />}
           {activeTab === 'general' && <GeneralSettings />}
         </div>

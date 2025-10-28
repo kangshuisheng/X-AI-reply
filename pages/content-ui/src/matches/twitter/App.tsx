@@ -1,23 +1,26 @@
 import { ReplyList } from './components/ReplyList';
+import { TagModeSelector } from './components/TagModeSelector';
 import { ToneSelector } from './components/ToneSelector';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function App() {
   const [showToneSelector, setShowToneSelector] = useState(false);
   const [showReplyList, setShowReplyList] = useState(false);
+  const [showTagModeSelector, setShowTagModeSelector] = useState(false);
   const [replies, setReplies] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentTweetContent, setCurrentTweetContent] = useState('');
   const [currentToneId, setCurrentToneId] = useState('');
 
-  // 获取输入框位置，用于定位弹窗
+  // 获取输入框位置，用于定位弹窗（固定定位，不跟随滚动）
   const getInputBoxPosition = () => {
     const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
     if (replyBox) {
       const rect = replyBox.getBoundingClientRect();
       return {
-        top: rect.bottom + 8,
-        left: rect.left,
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
         width: rect.width,
       };
     }
@@ -31,6 +34,7 @@ export default function App() {
     const resetState = () => {
       setShowToneSelector(false);
       setShowReplyList(false);
+      setShowTagModeSelector(false);
       setReplies([]);
       const button = document.querySelector('.ai-reply-button');
       if (button) {
@@ -181,7 +185,7 @@ export default function App() {
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [showToneSelector, showReplyList]);
+  }, [showToneSelector, showReplyList, showTagModeSelector]);
 
   const handleAIButtonClick = async () => {
     // 检查是否配置了 API key
@@ -361,20 +365,43 @@ export default function App() {
 
   return (
     <>
-      {showToneSelector && (
-        <ToneSelector position={getInputBoxPosition()} onSelect={handleToneSelect} onClose={handleClose} />
-      )}
-      {showReplyList && (
-        <ReplyList
-          position={getInputBoxPosition()}
-          replies={replies}
-          loading={loading}
-          onSelect={handleReplySelect}
-          onClose={handleClose}
-          onBack={handleBackToTones}
-          onRegenerate={handleRegenerate}
-        />
-      )}
+      {showToneSelector &&
+        createPortal(
+          <ToneSelector
+            position={getInputBoxPosition()}
+            onSelect={handleToneSelect}
+            onClose={handleClose}
+            onTagModeClick={() => {
+              setShowToneSelector(false);
+              setShowTagModeSelector(true);
+            }}
+          />,
+          document.body,
+        )}
+      {showTagModeSelector &&
+        createPortal(
+          <TagModeSelector
+            position={getInputBoxPosition()}
+            onClose={() => {
+              setShowTagModeSelector(false);
+              setShowToneSelector(true);
+            }}
+          />,
+          document.body,
+        )}
+      {showReplyList &&
+        createPortal(
+          <ReplyList
+            position={getInputBoxPosition()}
+            replies={replies}
+            loading={loading}
+            onSelect={handleReplySelect}
+            onClose={handleClose}
+            onBack={handleBackToTones}
+            onRegenerate={handleRegenerate}
+          />,
+          document.body,
+        )}
     </>
   );
 }

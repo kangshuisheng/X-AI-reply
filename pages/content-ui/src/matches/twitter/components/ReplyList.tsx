@@ -18,7 +18,7 @@ export const ReplyList = ({ position, replies, loading, onSelect, onClose, onBac
       role="dialog"
       tabIndex={-1}
       style={{
-        position: 'fixed',
+        position: 'absolute',
         top: position.top,
         left: position.left,
         zIndex: 100000,

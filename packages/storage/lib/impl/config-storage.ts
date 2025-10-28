@@ -20,11 +20,20 @@ interface AIModelConfig {
   customModelName?: string;
 }
 
+interface TagModeConfig {
+  id: string;
+  name: string;
+  tags: string;
+  isDefault: boolean;
+}
+
 interface UserConfig {
   aiModel: AIModelConfig;
   tones: ToneConfig[];
   replyCount: number;
   corpus: string[];
+  tagModes: TagModeConfig[];
+  selectedTagMode?: string;
 }
 
 const defaultTones: ToneConfig[] = [
@@ -35,6 +44,15 @@ const defaultTones: ToneConfig[] = [
   { id: 'questioning', name: '提问', prompt: '以提问、探讨的方式回复' },
 ];
 
+const defaultTagModes: TagModeConfig[] = [
+  {
+    id: 'river',
+    name: 'River 嘴撸',
+    tags: '@RiverdotInc @River4fun #RiverPts #River4fun',
+    isDefault: false,
+  },
+];
+
 const defaultConfig: UserConfig = {
   aiModel: {
     selectedModel: 'openai',
@@ -43,6 +61,7 @@ const defaultConfig: UserConfig = {
   tones: defaultTones,
   replyCount: 3,
   corpus: [],
+  tagModes: defaultTagModes,
 };
 
 const configStorage = createStorage<UserConfig>('x-ai-reply-config', defaultConfig, {
@@ -50,5 +69,5 @@ const configStorage = createStorage<UserConfig>('x-ai-reply-config', defaultConf
   liveUpdate: true,
 });
 
-export type { ToneConfig, AIModelConfig, UserConfig };
+export type { ToneConfig, AIModelConfig, UserConfig, TagModeConfig };
 export { configStorage };
