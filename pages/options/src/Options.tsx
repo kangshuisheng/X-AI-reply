@@ -8,7 +8,7 @@ import { ToneManager } from './components/ToneManager';
 import { t } from '@extension/i18n';
 import { useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
 import { exampleThemeStorage } from '@extension/storage';
-import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
+import { cn, ErrorDisplay, LoadingSpinner } from '@extension/ui';
 import { useState } from 'react';
 
 const Options = () => {
@@ -24,89 +24,52 @@ const Options = () => {
     { id: 'general' as const, label: t('tabGeneralSettings') },
   ];
 
-  const containerStyle = {
-    minHeight: '100vh',
-    background: isLight
-      ? 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
-      : 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  };
-
-  const cardStyle = {
-    background: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(30, 41, 59, 0.95)',
-    backdropFilter: 'blur(12px)',
-    borderRadius: '20px',
-    boxShadow: isLight ? '0 20px 40px rgba(0, 0, 0, 0.1)' : '0 20px 40px rgba(0, 0, 0, 0.3)',
-    border: isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(71, 85, 105, 0.3)',
-  };
-
   return (
-    <div style={containerStyle}>
-      <div style={{ maxWidth: '1024px', margin: '0 auto', padding: '32px' }}>
-        <div style={{ marginBottom: '32px', textAlign: 'center' }}>
-          <h1
-            style={{
-              fontSize: '36px',
-              fontWeight: '800',
-              marginBottom: '8px',
-              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
+    <div
+      className={cn(
+        'min-h-screen',
+        isLight ? 'bg-gradient-to-br from-slate-50 to-slate-200' : 'bg-gradient-to-br from-slate-900 to-slate-800',
+      )}>
+      <div className="mx-auto max-w-4xl p-8">
+        <div className="mb-8 text-center">
+          <h1 className="mb-2 bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-4xl font-extrabold text-transparent">
             {t('optionsTitle')}
           </h1>
-          <p
-            style={{
-              color: isLight ? '#64748b' : '#94a3b8',
-              fontSize: '18px',
-            }}>
-            {t('optionsSubtitle')}
-          </p>
+          <p className={cn('text-lg', isLight ? 'text-slate-500' : 'text-slate-400')}>{t('optionsSubtitle')}</p>
         </div>
 
         <div
-          style={{
-            display: 'flex',
-            gap: '16px',
-            marginBottom: '24px',
-            borderBottom: isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(71, 85, 105, 0.3)',
-            justifyContent: 'center',
-          }}>
+          className={cn(
+            'mb-6 flex justify-center gap-4',
+            isLight ? 'border-b border-slate-200/50' : 'border-b border-slate-700/30',
+          )}>
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: '12px 24px',
-                fontWeight: '600',
-                transition: 'all 0.2s',
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                borderRadius: '12px 12px 0 0',
-                borderBottom: activeTab === tab.id ? '3px solid #3b82f6' : '3px solid transparent',
-                color: activeTab === tab.id ? '#3b82f6' : isLight ? '#64748b' : '#94a3b8',
-                fontSize: '16px',
-              }}
-              onMouseEnter={e => {
-                if (activeTab !== tab.id) {
-                  e.currentTarget.style.color = isLight ? '#1e293b' : '#f1f5f9';
-                  e.currentTarget.style.background = isLight ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.1)';
-                }
-              }}
-              onMouseLeave={e => {
-                if (activeTab !== tab.id) {
-                  e.currentTarget.style.color = isLight ? '#64748b' : '#94a3b8';
-                  e.currentTarget.style.background = 'transparent';
-                }
-              }}>
+              className={cn(
+                'rounded-t-xl px-6 py-3 text-base font-semibold transition-all',
+                activeTab === tab.id
+                  ? 'border-b-[3px] border-blue-500 text-blue-500'
+                  : cn(
+                      'border-b-[3px] border-transparent',
+                      isLight
+                        ? 'text-slate-500 hover:bg-blue-500/5 hover:text-slate-900'
+                        : 'text-slate-400 hover:bg-blue-500/10 hover:text-slate-100',
+                    ),
+              )}>
               {tab.label}
             </button>
           ))}
         </div>
 
-        <div style={{ ...cardStyle, padding: '32px' }}>
+        <div
+          className={cn(
+            'rounded-[20px] p-8 backdrop-blur-xl',
+            isLight
+              ? 'border border-slate-200/50 bg-white/95 shadow-xl'
+              : 'border border-slate-700/30 bg-slate-800/95 shadow-2xl',
+          )}>
           {activeTab === 'api' && <ApiConfig />}
           {activeTab === 'tone' && <ToneManager />}
           {activeTab === 'tagmode' && <TagModeManager />}
@@ -115,27 +78,15 @@ const Options = () => {
           {activeTab === 'general' && <GeneralSettings />}
         </div>
 
-        <div style={{ marginTop: '24px', textAlign: 'center' }}>
+        <div className="mt-6 text-center">
           <button
             onClick={exampleThemeStorage.toggle}
-            style={{
-              padding: '8px 16px',
-              background: 'transparent',
-              border: `1px solid ${isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.3)'}`,
-              borderRadius: '8px',
-              color: isLight ? '#64748b' : '#94a3b8',
-              cursor: 'pointer',
-              fontSize: '14px',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = isLight ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.1)';
-              e.currentTarget.style.borderColor = '#3b82f6';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.3)';
-            }}>
+            className={cn(
+              'rounded-lg px-4 py-2 text-sm font-medium transition-all',
+              isLight
+                ? 'border border-slate-200/50 text-slate-500 hover:border-blue-500 hover:bg-blue-500/5'
+                : 'border border-slate-700/30 text-slate-400 hover:border-blue-500 hover:bg-blue-500/10',
+            )}>
             {t('toggleThemeButton')}
           </button>
         </div>

@@ -1,5 +1,6 @@
 import { useStorage } from '@extension/shared';
 import { configStorage, exampleThemeStorage } from '@extension/storage';
+import { cn } from '@extension/ui';
 
 export const GeneralSettings = () => {
   const config = useStorage(configStorage);
@@ -12,58 +13,33 @@ export const GeneralSettings = () => {
     }));
   };
 
-  const selectStyle = {
-    width: '100%',
-    padding: '12px 16px',
-    border: isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(71, 85, 105, 0.5)',
-    borderRadius: '12px',
-    background: isLight ? 'rgba(255, 255, 255, 0.8)' : 'rgba(30, 41, 59, 0.8)',
-    color: isLight ? '#1e293b' : '#f1f5f9',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    transition: 'all 0.2s',
-    cursor: 'pointer',
-  };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: '600', color: isLight ? '#1e293b' : '#f1f5f9' }}>通用设置</h2>
+    <div className="flex flex-col gap-6">
+      <h2 className={cn('text-xl font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>通用设置</h2>
 
       <div>
         <label
           htmlFor="reply-count-select"
-          style={{
-            display: 'block',
-            fontSize: '14px',
-            fontWeight: '500',
-            marginBottom: '8px',
-            color: isLight ? '#374151' : '#d1d5db',
-          }}>
+          className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
           生成回复数量
         </label>
         <select
           id="reply-count-select"
           value={config.replyCount}
           onChange={e => handleReplyCountChange(Number(e.target.value))}
-          style={selectStyle}
-          onFocus={e => {
-            e.currentTarget.style.borderColor = '#3b82f6';
-            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-          }}
-          onBlur={e => {
-            e.currentTarget.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.5)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}>
+          className={cn(
+            'w-full cursor-pointer rounded-xl border px-4 py-3 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10',
+            isLight
+              ? 'border-slate-200/50 bg-white/80 text-slate-900'
+              : 'border-slate-600/50 bg-slate-800/80 text-slate-100',
+          )}>
           {[1, 2, 3, 4, 5].map(num => (
-            <option
-              key={num}
-              value={num}
-              style={{ background: isLight ? '#ffffff' : '#1e293b', color: isLight ? '#1e293b' : '#f1f5f9' }}>
+            <option key={num} value={num}>
               {num} 条
             </option>
           ))}
         </select>
-        <p style={{ fontSize: '14px', color: isLight ? '#64748b' : '#94a3b8', marginTop: '4px', margin: '4px 0 0 0' }}>
+        <p className={cn('m-0 mt-1 text-sm', isLight ? 'text-slate-500' : 'text-slate-400')}>
           每次点击 AI 按钮生成的回复数量
         </p>
       </div>

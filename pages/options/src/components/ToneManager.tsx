@@ -1,5 +1,6 @@
 import { useStorage } from '@extension/shared';
 import { configStorage, exampleThemeStorage } from '@extension/storage';
+import { cn } from '@extension/ui';
 import { useState } from 'react';
 import type { ToneConfig } from '@extension/storage';
 
@@ -8,18 +9,6 @@ export const ToneManager = () => {
   const { isLight } = useStorage(exampleThemeStorage);
   const [isAdding, setIsAdding] = useState(false);
   const [newTone, setNewTone] = useState({ name: '', prompt: '' });
-
-  const inputStyle = {
-    width: '100%',
-    padding: '12px 16px',
-    border: isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(71, 85, 105, 0.5)',
-    borderRadius: '12px',
-    background: isLight ? 'rgba(255, 255, 255, 0.8)' : 'rgba(30, 41, 59, 0.8)',
-    color: isLight ? '#1e293b' : '#f1f5f9',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    transition: 'all 0.2s',
-  };
 
   const handleAddTone = async () => {
     if (!newTone.name.trim() || !newTone.prompt.trim()) return;
@@ -44,48 +33,26 @@ export const ToneManager = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '600', color: isLight ? '#1e293b' : '#f1f5f9' }}>回复语气管理</h2>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h2 className={cn('text-xl font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>回复语气管理</h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          style={{
-            padding: '8px 16px',
-            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-            color: 'white',
-            borderRadius: '8px',
-            border: 'none',
-            cursor: 'pointer',
-            fontWeight: '500',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
-          onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}>
+          className="rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 px-4 py-2 font-medium text-white transition-all hover:-translate-y-0.5">
           {isAdding ? '取消' : '+ 添加语气'}
         </button>
       </div>
 
       {isAdding && (
         <div
-          style={{
-            padding: '16px',
-            border: isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(71, 85, 105, 0.5)',
-            borderRadius: '12px',
-            background: isLight ? 'rgba(249, 250, 251, 0.8)' : 'rgba(55, 65, 81, 0.8)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-          }}>
+          className={cn(
+            'flex flex-col gap-3 rounded-xl border p-4',
+            isLight ? 'border-slate-200/50 bg-gray-50/80' : 'border-slate-600/50 bg-gray-700/80',
+          )}>
           <div>
             <label
               htmlFor="tone-name-input"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                marginBottom: '8px',
-                color: isLight ? '#374151' : '#d1d5db',
-              }}>
+              className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
               语气名称
             </label>
             <input
@@ -94,27 +61,18 @@ export const ToneManager = () => {
               value={newTone.name}
               onChange={e => setNewTone({ ...newTone, name: e.target.value })}
               placeholder="例如：专业、友好"
-              style={inputStyle}
-              onFocus={e => {
-                e.currentTarget.style.borderColor = '#3b82f6';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-              }}
-              onBlur={e => {
-                e.currentTarget.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.5)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              className={cn(
+                'w-full rounded-xl border px-4 py-3 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10',
+                isLight
+                  ? 'border-slate-200/50 bg-white/80 text-slate-900'
+                  : 'border-slate-600/50 bg-slate-800/80 text-slate-100',
+              )}
             />
           </div>
           <div>
             <label
               htmlFor="tone-prompt-textarea"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                marginBottom: '8px',
-                color: isLight ? '#374151' : '#d1d5db',
-              }}>
+              className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
               提示词
             </label>
             <textarea
@@ -123,80 +81,43 @@ export const ToneManager = () => {
               onChange={e => setNewTone({ ...newTone, prompt: e.target.value })}
               placeholder="描述这种语气的特点，例如：以专业、正式的语气回复"
               rows={3}
-              style={{ ...inputStyle, resize: 'vertical' }}
-              onFocus={e => {
-                e.currentTarget.style.borderColor = '#3b82f6';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-              }}
-              onBlur={e => {
-                e.currentTarget.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.5)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
+              className={cn(
+                'w-full resize-y rounded-xl border px-4 py-3 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10',
+                isLight
+                  ? 'border-slate-200/50 bg-white/80 text-slate-900'
+                  : 'border-slate-600/50 bg-slate-800/80 text-slate-100',
+              )}
             />
           </div>
           <button
             onClick={handleAddTone}
             disabled={!newTone.name.trim() || !newTone.prompt.trim()}
-            style={{
-              padding: '8px 16px',
-              background:
-                newTone.name.trim() && newTone.prompt.trim() ? 'linear-gradient(135deg, #10b981, #059669)' : '#9ca3af',
-              color: 'white',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: newTone.name.trim() && newTone.prompt.trim() ? 'pointer' : 'not-allowed',
-              fontWeight: '500',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={e => {
-              if (newTone.name.trim() && newTone.prompt.trim()) e.currentTarget.style.transform = 'translateY(-1px)';
-            }}
-            onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}>
+            className={cn(
+              'rounded-lg px-4 py-2 font-medium transition-all',
+              newTone.name.trim() && newTone.prompt.trim()
+                ? 'cursor-pointer bg-gradient-to-r from-green-500 to-green-600 text-white hover:-translate-y-0.5'
+                : 'cursor-not-allowed bg-gray-400 text-white',
+            )}>
             保存
           </button>
         </div>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="flex flex-col gap-3">
         {config.tones.map(tone => (
           <div
             key={tone.id}
-            style={{
-              padding: '16px',
-              border: isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(71, 85, 105, 0.5)',
-              borderRadius: '12px',
-              background: isLight ? 'rgba(255, 255, 255, 0.8)' : 'rgba(30, 41, 59, 0.8)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'flex-start',
-            }}>
-            <div style={{ flex: 1 }}>
-              <h3 style={{ fontWeight: '500', color: isLight ? '#1e293b' : '#f1f5f9', margin: 0 }}>{tone.name}</h3>
-              <p style={{ fontSize: '14px', color: isLight ? '#64748b' : '#94a3b8', marginTop: '4px', margin: 0 }}>
-                {tone.prompt}
-              </p>
+            className={cn(
+              'flex items-start justify-between rounded-xl border p-4',
+              isLight ? 'border-slate-200/50 bg-white/80' : 'border-slate-600/50 bg-slate-800/80',
+            )}>
+            <div className="flex-1">
+              <h3 className={cn('m-0 font-medium', isLight ? 'text-slate-900' : 'text-slate-100')}>{tone.name}</h3>
+              <p className={cn('m-0 mt-1 text-sm', isLight ? 'text-slate-500' : 'text-slate-400')}>{tone.prompt}</p>
             </div>
             <button
               onClick={() => handleDeleteTone(tone.id)}
-              style={{
-                marginLeft: '16px',
-                padding: '4px 12px',
-                color: '#dc2626',
-                background: 'transparent',
-                border: '1px solid #dc2626',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = '#dc2626';
-                e.currentTarget.style.color = 'white';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = '#dc2626';
-              }}>
+              className="ml-4 rounded-md border border-red-600 px-3 py-1 text-sm text-red-600 transition-all hover:bg-red-600 hover:text-white">
               删除
             </button>
           </div>

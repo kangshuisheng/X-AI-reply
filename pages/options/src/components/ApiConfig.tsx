@@ -1,6 +1,7 @@
 import { t } from '@extension/i18n';
 import { useStorage } from '@extension/shared';
 import { configStorage, exampleThemeStorage } from '@extension/storage';
+import { cn } from '@extension/ui';
 import { useState } from 'react';
 
 const AI_PROVIDERS = [
@@ -53,18 +54,6 @@ export const ApiConfig = () => {
 
   const selectedProvider = AI_PROVIDERS.find(p => p.id === config.aiModel.selectedModel);
 
-  const inputStyle = {
-    width: '100%',
-    padding: '12px 16px',
-    border: isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(71, 85, 105, 0.5)',
-    borderRadius: '12px',
-    background: isLight ? 'rgba(255, 255, 255, 0.8)' : 'rgba(30, 41, 59, 0.8)',
-    color: isLight ? '#1e293b' : '#f1f5f9',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    transition: 'all 0.2s',
-  };
-
   const handleModelChange = async (modelId: 'openrouter' | 'deepseek' | 'siliconflow' | 'aliyun') => {
     await configStorage.set(prev => ({
       ...prev,
@@ -85,31 +74,18 @@ export const ApiConfig = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="flex flex-col gap-6">
       <div>
-        <h2
-          style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', color: isLight ? '#1e293b' : '#f1f5f9' }}>
+        <h2 className={cn('mb-4 text-xl font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>
           {t('aiProviderConfig')}
         </h2>
 
         {/* API Key 状态总览 */}
-        <div
-          style={{
-            padding: '16px',
-            background: isLight ? 'rgba(243, 244, 246, 0.8)' : 'rgba(55, 65, 81, 0.8)',
-            borderRadius: '12px',
-            marginBottom: '20px',
-          }}>
-          <h3
-            style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              marginBottom: '12px',
-              color: isLight ? '#1e293b' : '#f1f5f9',
-            }}>
+        <div className={cn('mb-5 rounded-xl p-4', isLight ? 'bg-gray-100/80' : 'bg-gray-700/80')}>
+          <h3 className={cn('mb-3 text-base font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>
             {t('configurationStatus')}
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2">
             {AI_PROVIDERS.filter(p => p.id !== 'custom').map(provider => {
               const hasKey = !!config.aiModel.apiKeys[provider.id];
               const isSelected = config.aiModel.selectedModel === provider.id;
@@ -117,60 +93,40 @@ export const ApiConfig = () => {
                 <button
                   key={provider.id}
                   onClick={() => handleModelChange(provider.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    background: isSelected
+                  className={cn(
+                    'flex w-full cursor-pointer items-center gap-2 rounded-lg border-2 px-3 py-2 text-left transition-all',
+                    isSelected
                       ? isLight
-                        ? 'rgba(59, 130, 246, 0.15)'
-                        : 'rgba(59, 130, 246, 0.25)'
+                        ? 'border-blue-500 bg-blue-500/15'
+                        : 'border-blue-500 bg-blue-500/25'
                       : hasKey
                         ? isLight
-                          ? 'rgba(34, 197, 94, 0.1)'
-                          : 'rgba(34, 197, 94, 0.2)'
+                          ? 'border-green-500 bg-green-500/10'
+                          : 'border-green-500 bg-green-500/20'
                         : isLight
-                          ? 'rgba(239, 68, 68, 0.1)'
-                          : 'rgba(239, 68, 68, 0.2)',
-                    border: `2px solid ${isSelected ? '#3b82f6' : hasKey ? '#22c55e' : '#ef4444'}`,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    width: '100%',
-                    textAlign: 'left',
-                  }}
-                  onMouseEnter={e => {
-                    if (!isSelected) {
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}>
+                          ? 'border-red-500 bg-red-500/10'
+                          : 'border-red-500 bg-red-500/20',
+                    !isSelected && 'hover:-translate-y-0.5 hover:shadow-md',
+                  )}>
                   <div
-                    style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      background: isSelected ? '#3b82f6' : hasKey ? '#22c55e' : '#ef4444',
-                    }}></div>
-                  <span style={{ fontSize: '14px', color: isLight ? '#374151' : '#d1d5db', flex: 1 }}>
+                    className={cn(
+                      'h-2 w-2 rounded-full',
+                      isSelected ? 'bg-blue-500' : hasKey ? 'bg-green-500' : 'bg-red-500',
+                    )}
+                  />
+                  <span className={cn('flex-1 text-sm', isLight ? 'text-gray-700' : 'text-gray-200')}>
                     {provider.name}
                   </span>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                  <div className="flex flex-col items-end gap-0.5">
                     <span
-                      style={{
-                        fontSize: '12px',
-                        color: isSelected ? '#3b82f6' : hasKey ? '#22c55e' : '#ef4444',
-                        fontWeight: '500',
-                      }}>
+                      className={cn(
+                        'text-xs font-medium',
+                        isSelected ? 'text-blue-500' : hasKey ? 'text-green-500' : 'text-red-500',
+                      )}>
                       {isSelected ? t('currentSelected') : hasKey ? t('configured') : t('notConfigured')}
                     </span>
                     {!isSelected && (
-                      <span style={{ fontSize: '10px', color: isLight ? '#9ca3af' : '#6b7280' }}>
+                      <span className={cn('text-[10px]', isLight ? 'text-gray-400' : 'text-gray-500')}>
                         {t('clickToSwitch')}
                       </span>
                     )}
@@ -181,37 +137,25 @@ export const ApiConfig = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="flex flex-col gap-4">
           <div>
             <label
               htmlFor="ai-provider-select"
-              style={{
-                display: 'block',
-                fontSize: '14px',
-                fontWeight: '500',
-                marginBottom: '8px',
-                color: isLight ? '#374151' : '#d1d5db',
-              }}>
+              className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
               {t('selectAiProvider')}
             </label>
             <select
               id="ai-provider-select"
               value={config.aiModel.selectedModel}
               onChange={e => handleModelChange(e.target.value as 'openrouter' | 'deepseek' | 'siliconflow' | 'aliyun')}
-              style={inputStyle}
-              onFocus={e => {
-                e.currentTarget.style.borderColor = '#3b82f6';
-                e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-              }}
-              onBlur={e => {
-                e.currentTarget.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.5)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}>
+              className={cn(
+                'w-full rounded-xl border px-4 py-3 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10',
+                isLight
+                  ? 'border-slate-200/50 bg-white/80 text-slate-900'
+                  : 'border-slate-600/50 bg-slate-800/80 text-slate-100',
+              )}>
               {AI_PROVIDERS.map(provider => (
-                <option
-                  key={provider.id}
-                  value={provider.id}
-                  style={{ background: isLight ? '#ffffff' : '#1e293b', color: isLight ? '#1e293b' : '#f1f5f9' }}>
+                <option key={provider.id} value={provider.id}>
                   {provider.name} - {provider.description}
                 </option>
               ))}
@@ -220,32 +164,27 @@ export const ApiConfig = () => {
 
           {selectedProvider && selectedProvider.apiUrl && (
             <div
-              style={{
-                padding: '12px',
-                background: isLight ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.1)',
-                borderRadius: '8px',
-                border: `1px solid ${isLight ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.3)'}`,
-                fontSize: '14px',
-              }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div style={{ color: isLight ? '#1e40af' : '#60a5fa', fontWeight: '500' }}>
+              className={cn(
+                'rounded-lg border p-3 text-sm',
+                isLight ? 'border-blue-500/20 bg-blue-500/5' : 'border-blue-500/30 bg-blue-500/10',
+              )}>
+              <div className="flex flex-col gap-1.5">
+                <div className={cn('font-medium', isLight ? 'text-blue-900' : 'text-blue-300')}>
                   📡 API 地址：{selectedProvider.apiUrl}
                 </div>
-                <div style={{ color: isLight ? '#1e40af' : '#60a5fa', fontWeight: '500' }}>
+                <div className={cn('font-medium', isLight ? 'text-blue-900' : 'text-blue-300')}>
                   🤖 默认模型：{selectedProvider.defaultModel}
                 </div>
                 {selectedProvider.signupUrl && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ color: isLight ? '#1e40af' : '#60a5fa', fontWeight: '500' }}>🔑 申请地址：</span>
+                  <div className="flex items-center gap-2">
+                    <span className={cn('font-medium', isLight ? 'text-blue-900' : 'text-blue-300')}>
+                      🔑 申请地址：
+                    </span>
                     <a
                       href={selectedProvider.signupUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{
-                        color: '#3b82f6',
-                        textDecoration: 'underline',
-                        fontSize: '14px',
-                      }}>
+                      className="text-sm text-blue-500 underline">
                       {selectedProvider.signupUrl}
                     </a>
                   </div>
@@ -255,9 +194,8 @@ export const ApiConfig = () => {
           )}
 
           <div>
-            <div
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <label style={{ fontSize: '14px', fontWeight: '500', color: isLight ? '#374151' : '#d1d5db' }}>
+            <div className="mb-2 flex items-center justify-between">
+              <label className={cn('text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
                 {selectedProvider?.name} API Key
               </label>
               {selectedProvider?.signupUrl && (
@@ -265,34 +203,17 @@ export const ApiConfig = () => {
                   href={selectedProvider.signupUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{
-                    fontSize: '12px',
-                    color: '#3b82f6',
-                    textDecoration: 'none',
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    background: isLight ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.2)',
-                    border: '1px solid rgba(59, 130, 246, 0.3)',
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = isLight
-                      ? 'rgba(59, 130, 246, 0.15)'
-                      : 'rgba(59, 130, 246, 0.25)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = isLight ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.2)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                  }}>
+                  className={cn(
+                    'flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition-all hover:-translate-y-0.5',
+                    isLight
+                      ? 'border-blue-500/30 bg-blue-500/10 text-blue-500 hover:bg-blue-500/15'
+                      : 'border-blue-500/30 bg-blue-500/20 text-blue-500 hover:bg-blue-500/25',
+                  )}>
                   🔗 获取 API Key
                 </a>
               )}
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="flex gap-2">
               <input
                 type="password"
                 value={apiKey}
@@ -302,52 +223,29 @@ export const ApiConfig = () => {
                     ? '已配置 (输入新值覆盖)'
                     : `输入 ${selectedProvider?.name} API Key`
                 }
-                style={{ ...inputStyle, flex: 1 }}
-                onFocus={e => {
-                  e.currentTarget.style.borderColor = '#3b82f6';
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                }}
-                onBlur={e => {
-                  e.currentTarget.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.5)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
+                className={cn(
+                  'flex-1 rounded-xl border px-4 py-3 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10',
+                  isLight
+                    ? 'border-slate-200/50 bg-white/80 text-slate-900'
+                    : 'border-slate-600/50 bg-slate-800/80 text-slate-100',
+                )}
               />
               <button
                 onClick={handleSaveApiKey}
                 disabled={!apiKey.trim()}
-                style={{
-                  padding: '8px 16px',
-                  background: apiKey.trim() ? 'linear-gradient(135deg, #10b981, #059669)' : '#9ca3af',
-                  color: 'white',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: apiKey.trim() ? 'pointer' : 'not-allowed',
-                  fontWeight: '500',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => {
-                  if (apiKey.trim()) e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}>
+                className={cn(
+                  'rounded-lg px-4 py-2 font-medium transition-all',
+                  apiKey.trim()
+                    ? 'cursor-pointer bg-gradient-to-r from-green-500 to-green-600 text-white hover:-translate-y-0.5'
+                    : 'cursor-not-allowed bg-gray-400 text-white',
+                )}>
                 保存
               </button>
             </div>
             {config.aiModel.apiKeys[config.aiModel.selectedModel] && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  marginTop: '8px',
-                  padding: '8px 12px',
-                  background: isLight ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.2)',
-                  borderRadius: '6px',
-                  border: '1px solid #22c55e',
-                }}>
-                <span style={{ fontSize: '16px' }}>✅</span>
-                <span style={{ fontSize: '14px', color: '#22c55e', fontWeight: '500' }}>
-                  {selectedProvider?.name} API Key 已配置
-                </span>
+              <div className="mt-2 flex items-center gap-2 rounded-md border border-green-500 bg-green-500/10 px-3 py-2">
+                <span className="text-base">✅</span>
+                <span className="text-sm font-medium text-green-500">{selectedProvider?.name} API Key 已配置</span>
               </div>
             )}
           </div>
