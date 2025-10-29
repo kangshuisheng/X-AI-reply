@@ -1,7 +1,9 @@
+import { AIDetectionBadge } from './components/AIDetectionBadge';
 import { ReplyList } from './components/ReplyList';
 import { TagModeSelector } from './components/TagModeSelector';
 import { ToneSelector } from './components/ToneSelector';
 import { t } from '@extension/i18n';
+import { configStorage } from '@extension/storage';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -13,6 +15,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [currentTweetContent, setCurrentTweetContent] = useState('');
   const [currentToneId, setCurrentToneId] = useState('');
+  const [aiDetectionEnabled, setAiDetectionEnabled] = useState(false);
+  const [showConfidence, setShowConfidence] = useState(true);
 
   // 获取输入框位置，用于定位弹窗（固定定位，不跟随滚动）
   const getInputBoxPosition = () => {
@@ -26,6 +30,57 @@ export default function App() {
       };
     }
     return { top: 0, left: 0, width: 0 };
+  };
+
+  // 加载AI检测配置
+  useEffect(() => {
+    configStorage.get().then(config => {
+      setAiDetectionEnabled(config.aiDetection.enabled);
+      setShowConfidence(config.aiDetection.showConfidence);
+    });
+  }, []);
+
+  // AI检测函数
+  const detectAIContent = async (content: string, tweetElement: Element) => {
+    if (!aiDetectionEnabled || !content.trim()) return;
+
+    try {
+      const response = await chrome.runtime.sendMessage({
+        type: 'DETECT_AI_CONTENT',
+        payload: { content },
+      });
+
+      if (response.success) {
+        addAIDetectionBadge(tweetElement, response.isAI, response.confidence);
+      }
+    } catch (error) {
+      console.error('AI detection failed:', error);
+    }
+  };
+
+  // 添加AI检测标识
+  const addAIDetectionBadge = (tweetElement: Element, isAI: boolean, confidence: number) => {
+    const existingBadge = tweetElement.querySelector('.ai-detection-badge');
+    if (existingBadge) return; // 已经有标识了
+
+    const tweetText = tweetElement.querySelector('[data-testid="tweetText"]');
+    if (!tweetText) return;
+
+    const badgeContainer = document.createElement('div');
+    badgeContainer.className = 'ai-detection-badge';
+    badgeContainer.style.cssText = `
+      display: inline-block;
+      margin-left: 8px;
+      vertical-align: middle;
+    `;
+
+    // 使用React渲染组件
+    createPortal(
+      <AIDetectionBadge isAI={isAI} confidence={confidence} showConfidence={showConfidence} />,
+      badgeContainer,
+    );
+
+    tweetText.appendChild(badgeContainer);
   };
 
   useEffect(() => {
@@ -143,6 +198,17 @@ export default function App() {
         addAIButton(existingReplyBox);
       }
 
+      // AI检测现有推文
+      if (aiDetectionEnabled) {
+        const tweets = document.querySelectorAll('[data-testid="tweet"]');
+        tweets.forEach(tweet => {
+          const tweetText = tweet.querySelector('[data-testid="tweetText"]')?.textContent;
+          if (tweetText && !tweet.querySelector('.ai-detection-badge')) {
+            detectAIContent(tweetText, tweet);
+          }
+        });
+      }
+
       // 监听输入框的出现和消失
       const textareaObserver = new MutationObserver(() => {
         const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
@@ -155,6 +221,18 @@ export default function App() {
           if (button) {
             button.remove();
           }
+        }
+
+        // 检测新出现的推文
+        if (aiDetectionEnabled) {
+          const newTweets = document.querySelectorAll('[data-testid="tweet"]:not(.ai-detected)');
+          newTweets.forEach(tweet => {
+            const tweetText = tweet.querySelector('[data-testid="tweetText"]')?.textContent;
+            if (tweetText) {
+              tweet.classList.add('ai-detected');
+              detectAIContent(tweetText, tweet);
+            }
+          });
         }
       });
 
@@ -231,7 +309,7 @@ export default function App() {
       window.removeEventListener('popstate', handlePopState);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [showToneSelector, showReplyList, showTagModeSelector]);
+  }, [showToneSelector, showReplyList, showTagModeSelector, aiDetectionEnabled, detectAIContent]);
 
   const handleAIButtonClick = async (e?: Event) => {
     if (e) {

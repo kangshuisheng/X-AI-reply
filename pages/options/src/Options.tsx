@@ -1,4 +1,5 @@
 import '@src/Options.css';
+import { AIDetectionSettings } from './components/AIDetectionSettings';
 import { ApiConfig } from './components/ApiConfig';
 import { CorpusManager } from './components/CorpusManager';
 import { GeneralSettings } from './components/GeneralSettings';
@@ -12,13 +13,14 @@ import { useState } from 'react';
 
 const Options = () => {
   const { isLight } = useStorage(exampleThemeStorage);
-  const [activeTab, setActiveTab] = useState<'api' | 'tone' | 'tagmode' | 'corpus' | 'general'>('api');
+  const [activeTab, setActiveTab] = useState<'api' | 'tone' | 'tagmode' | 'corpus' | 'aidetection' | 'general'>('api');
 
   const tabs = [
     { id: 'api' as const, label: t('tabAiConfig') },
     { id: 'tone' as const, label: t('tabToneManagement') },
     { id: 'tagmode' as const, label: t('tabTagMode') },
     { id: 'corpus' as const, label: t('tabCorpus') },
+    { id: 'aidetection' as const, label: 'AI 检测' },
     { id: 'general' as const, label: t('tabGeneralSettings') },
   ];
 
@@ -109,6 +111,7 @@ const Options = () => {
           {activeTab === 'tone' && <ToneManager />}
           {activeTab === 'tagmode' && <TagModeManager />}
           {activeTab === 'corpus' && <CorpusManager />}
+          {activeTab === 'aidetection' && <AIDetectionSettings />}
           {activeTab === 'general' && <GeneralSettings />}
         </div>
 
