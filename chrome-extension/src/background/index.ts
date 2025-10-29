@@ -2,15 +2,13 @@ import 'webextension-polyfill';
 import { configStorage } from '@extension/storage';
 
 const API_ENDPOINTS = {
-  openai: 'https://api.openai.com/v1/chat/completions',
-  openrouter: 'https://openrouter.ai/api/v1/chat/completions',
   deepseek: 'https://api.deepseek.com/v1/chat/completions',
   siliconflow: 'https://api.siliconflow.cn/v1/chat/completions',
   aliyun: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+  openrouter: 'https://openrouter.ai/api/v1/chat/completions',
 };
 
 const MODEL_NAMES = {
-  openai: 'gpt-4o-mini',
   openrouter: 'openai/gpt-4o-mini',
   deepseek: 'deepseek-chat',
   siliconflow: 'deepseek-ai/DeepSeek-V3',
@@ -24,7 +22,7 @@ chrome.action.onClicked.addListener(() => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'GENERATE_REPLY') {
     handleGenerateReply(message.payload)
-      .then(replies => sendResponse({ success: true, replies }))
+      .then(result => sendResponse({ success: true, ...result }))
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
@@ -51,7 +49,7 @@ const checkConfig = async () => {
 
 const handleGenerateReply = async (payload: { tweetContent: string; toneId: string }) => {
   const config = await configStorage.get();
-  const { selectedModel, apiKeys, customApiUrl, customModelName } = config.aiModel;
+  const { selectedModel, apiKeys } = config.aiModel;
   const tone = config.tones.find(t => t.id === payload.toneId);
 
   if (!tone) throw new Error('Tone not found');
@@ -59,27 +57,32 @@ const handleGenerateReply = async (payload: { tweetContent: string; toneId: stri
   const apiKey = apiKeys[selectedModel];
   if (!apiKey) throw new Error('API key not configured');
 
-  const apiUrl = selectedModel === 'custom' ? customApiUrl : API_ENDPOINTS[selectedModel];
-  const modelName = selectedModel === 'custom' ? customModelName : MODEL_NAMES[selectedModel];
+  const apiUrl = API_ENDPOINTS[selectedModel];
+  const modelName = MODEL_NAMES[selectedModel];
 
   if (!apiUrl) throw new Error('API URL not configured');
 
-  const systemPrompt = `你是一个 X (Twitter) 回复助手。根据用户选择的语气和提供的帖子内容，生成合适的回复。
+  // 让 AI 自己判断和匹配语言
 
-要求：
-1. 回复要简洁、自然，避免 AI 味道
-2. 符合用户选择的语气/人设
-3. 回复长度控制在 280 字符以内
-4. 生成 ${config.replyCount} 条不同的回复
-5. 直接返回回复内容，不要编号或其他格式`;
+  const systemPrompt = `You are an X (Twitter) reply assistant. Generate appropriate replies based on the user's selected tone and the provided tweet content.
 
-  const userPrompt = `原帖内容：${payload.tweetContent}
+Requirements:
+1. Keep replies concise and natural, avoid AI-like responses
+2. Match the selected tone/persona
+3. Keep reply length under 280 characters
+4. Generate ${config.replyCount} different replies
+5. Return only the reply content, no numbering or formatting
+6. CRITICAL: Reply in the SAME LANGUAGE as the original tweet (Chinese, English, Japanese, Korean, Spanish, French, etc.)
+7. Detect the language of the original tweet and use that exact language for your replies
+`;
 
-回复语气：${tone.prompt}
+  const userPrompt = `Original Tweet: ${payload.tweetContent}
 
-${config.corpus.length > 0 ? `参考语料（模仿这种表达风格）：\n${config.corpus.slice(0, 5).join('\n')}` : ''}
+Reply Tone: ${tone.prompt}
 
-请生成 ${config.replyCount} 条回复，每条回复用换行符分隔。`;
+${config.corpus.length > 0 ? `Reference Style (only use if the language matches the original tweet):\n${config.corpus.slice(0, 5).join('\n')}\n\nIMPORTANT: Only mimic the style if the reference examples are in the same language as the original tweet. If languages don't match, ignore the reference style.` : ''}
+
+Generate ${config.replyCount} replies, each reply separated by newline. IMPORTANT: Use the exact same language as the original tweet above.`;
 
   const response = await fetch(apiUrl, {
     method: 'POST',
@@ -99,7 +102,14 @@ ${config.corpus.length > 0 ? `参考语料（模仿这种表达风格）：\n${c
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`API request failed: ${error}`);
+    console.error(`API Error [${selectedModel}]:`, {
+      status: response.status,
+      statusText: response.statusText,
+      error,
+      apiUrl,
+      modelName,
+    });
+    throw new Error(`${selectedModel} API failed (${response.status}): ${error}`);
   }
 
   const data = await response.json();
@@ -118,7 +128,7 @@ ${config.corpus.length > 0 ? `参考语料（模仿这种表达风格）：\n${c
     }
   }
 
-  return replies;
+  return { replies, modelInfo: { provider: selectedModel, model: modelName } };
 };
 
 console.log('X AI Reply Assistant - Background loaded');

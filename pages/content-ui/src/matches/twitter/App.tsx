@@ -1,6 +1,7 @@
 import { ReplyList } from './components/ReplyList';
 import { TagModeSelector } from './components/TagModeSelector';
 import { ToneSelector } from './components/ToneSelector';
+import { t } from '@extension/i18n';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -46,88 +47,98 @@ export default function App() {
       }
     };
 
+    const addAIButton = (replyBox: Element) => {
+      const container = replyBox.closest('[data-testid="tweetTextarea_0RichTextInputContainer"]');
+      if (container && !container.querySelector('.ai-reply-button')) {
+        const button = document.createElement('button');
+        button.className = 'ai-reply-button';
+        button.innerHTML = `
+          <svg style="width: 12px; height: 12px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        `;
+        button.title = t('aiButtonTooltip');
+        button.style.cssText = `
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          z-index: 10;
+          background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+          color: white;
+          padding: 6px;
+          border-radius: 6px;
+          border: none;
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          transition: all 0.2s ease;
+        `;
+
+        button.addEventListener('mouseenter', () => {
+          button.style.transform = 'scale(1.1)';
+          button.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.5)';
+        });
+
+        button.addEventListener('mouseleave', () => {
+          button.style.transform = 'scale(1)';
+          button.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.3)';
+        });
+
+        button.addEventListener('click', e => {
+          e.stopPropagation();
+          handleAIButtonClick();
+        });
+
+        (container as HTMLElement).style.position = 'relative';
+        container.appendChild(button);
+
+        // 获取推文内容
+        const tweetText = document.querySelector('[data-testid="tweetText"]')?.textContent || '';
+        const quotedTweet = document.querySelector('[data-testid="quotedTweet"]');
+        const quotedText = quotedTweet?.querySelector('[data-testid="tweetText"]')?.textContent || '';
+        setCurrentTweetContent(quotedText ? `${tweetText}\n\n引用: ${quotedText}` : tweetText);
+      }
+    };
+
     const setupReplyBoxListener = () => {
-      const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
-      if (replyBox && !cleanup) {
-        const handleFocus = () => {
-          // 直接在输入框容器中添加按钮
-          const container = replyBox.closest('[data-testid="tweetTextarea_0RichTextInputContainer"]');
-          if (container && !container.querySelector('.ai-reply-button')) {
-            const button = document.createElement('button');
-            button.className = 'ai-reply-button';
-            button.innerHTML = `
-              <svg style="width: 12px; height: 12px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            `;
-            button.title = 'AI 回复';
-            button.style.cssText = `
-              position: absolute;
-              top: 4px;
-              right: 4px;
-              z-index: 10;
-              background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-              color: white;
-              padding: 6px;
-              border-radius: 6px;
-              border: none;
-              box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-              cursor: pointer;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              width: 24px;
-              height: 24px;
-              transition: all 0.2s ease;
-            `;
+      // 立即检查是否有输入框
+      const existingReplyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
+      if (existingReplyBox) {
+        addAIButton(existingReplyBox);
+      }
 
-            button.addEventListener('mouseenter', () => {
-              button.style.transform = 'scale(1.1)';
-              button.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.5)';
-            });
-
-            button.addEventListener('mouseleave', () => {
-              button.style.transform = 'scale(1)';
-              button.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.3)';
-            });
-
-            button.addEventListener('click', handleAIButtonClick);
-
-            (container as HTMLElement).style.position = 'relative';
-            container.appendChild(button);
-          }
-
-          const tweetText = document.querySelector('[data-testid="tweetText"]')?.textContent || '';
-          const quotedTweet = document.querySelector('[data-testid="quotedTweet"]');
-          const quotedText = quotedTweet?.querySelector('[data-testid="tweetText"]')?.textContent || '';
-          setCurrentTweetContent(quotedText ? `${tweetText}\n\n引用: ${quotedText}` : tweetText);
-        };
-
-        const handleBlur = () => {
-          setTimeout(() => {
-            if (!showToneSelector && !showReplyList) {
-              const button = document.querySelector('.ai-reply-button');
-              if (button) {
-                button.remove();
-              }
-            }
-          }, 200);
-        };
-
-        replyBox.addEventListener('focus', handleFocus);
-        replyBox.addEventListener('blur', handleBlur);
-
-        cleanup = () => {
-          replyBox.removeEventListener('focus', handleFocus);
-          replyBox.removeEventListener('blur', handleBlur);
-          // 移除按钮
+      // 监听输入框的出现和消失
+      const textareaObserver = new MutationObserver(() => {
+        const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
+        if (replyBox) {
+          // 输入框出现，添加按钮
+          setTimeout(() => addAIButton(replyBox), 50);
+        } else if (!showToneSelector && !showReplyList && !showTagModeSelector) {
+          // 输入框消失且没有弹窗，移除按钮
           const button = document.querySelector('.ai-reply-button');
           if (button) {
             button.remove();
           }
-          cleanup = null;
-        };
-      }
+        }
+      });
+
+      textareaObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+
+      cleanup = () => {
+        textareaObserver.disconnect();
+        const button = document.querySelector('.ai-reply-button');
+        if (button) {
+          button.remove();
+        }
+        cleanup = null;
+      };
     };
 
     const checkUrlChange = () => {
@@ -164,13 +175,15 @@ export default function App() {
     // 点击外部关闭弹出框
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Element;
-      if (!target.closest('#x-ai-reply-root')) {
+      // 检查是否点击了AI按钮或弹窗内容
+      if (!target.closest('#x-ai-reply-root') && !target.closest('.ai-reply-button')) {
         setShowToneSelector(false);
         setShowReplyList(false);
+        setShowTagModeSelector(false);
       }
     };
 
-    if (showToneSelector || showReplyList) {
+    if (showToneSelector || showReplyList || showTagModeSelector) {
       // 延迟添加事件监听器，避免立即触发
       setTimeout(() => {
         document.addEventListener('click', handleClickOutside);
@@ -187,7 +200,10 @@ export default function App() {
     };
   }, [showToneSelector, showReplyList, showTagModeSelector]);
 
-  const handleAIButtonClick = async () => {
+  const handleAIButtonClick = async (e?: Event) => {
+    if (e) {
+      e.stopPropagation();
+    }
     // 检查是否配置了 API key
     try {
       const response = await chrome.runtime.sendMessage({ type: 'CHECK_CONFIG' });
@@ -209,8 +225,8 @@ export default function App() {
             text-align: center;
             max-width: 400px;
           ">
-            <h3 style="margin: 0 0 16px 0; color: #1e293b;">🔑 需要配置 API Key</h3>
-            <p style="margin: 0 0 20px 0; color: #64748b; line-height: 1.5;">请先配置 AI 供应商的 API Key 才能使用智能回复功能</p>
+            <h3 style="margin: 0 0 16px 0; color: #1e293b;">🔑 ${t('apiKeyRequired').split('.')[0]}</h3>
+            <p style="margin: 0 0 20px 0; color: #64748b; line-height: 1.5;">${t('apiKeyRequired')}</p>
             <div style="display: flex; gap: 12px; justify-content: center;">
               <button id="cancel-config" style="
                 padding: 8px 16px;
@@ -278,10 +294,12 @@ export default function App() {
       if (response.success) {
         setReplies(response.replies);
       } else {
+        showErrorMessage(response.error || '生成回复失败');
         setReplies([]);
       }
     } catch (error) {
       console.error('Failed to generate replies:', error);
+      showErrorMessage('网络连接失败，请检查网络连接');
       setReplies([]);
     } finally {
       setLoading(false);
@@ -299,10 +317,12 @@ export default function App() {
       if (response.success) {
         setReplies(response.replies);
       } else {
+        showErrorMessage(response.error || '重新生成失败');
         setReplies([]);
       }
     } catch (error) {
       console.error('Failed to regenerate replies:', error);
+      showErrorMessage('网络连接失败，请检查网络连接');
       setReplies([]);
     } finally {
       setLoading(false);
@@ -350,6 +370,67 @@ export default function App() {
       button.remove();
     }
     setReplies([]);
+  };
+
+  const showErrorMessage = (message: string) => {
+    const errorDiv = document.createElement('div');
+    const errorId = 'error-' + Date.now();
+    errorDiv.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+        z-index: 10000;
+        font-family: system-ui;
+        animation: slideInRight 0.3s ease-out;
+        max-width: 350px;
+        min-width: 280px;
+      ">
+        <div style="display: flex; align-items: flex-start; gap: 8px;">
+          <span style="font-size: 16px; flex-shrink: 0;">❌</span>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-weight: 600; margin-bottom: 4px; font-size: 14px;">错误信息</div>
+            <div id="${errorId}" style="
+              font-size: 12px;
+              line-height: 1.4;
+              word-wrap: break-word;
+              word-break: break-all;
+              white-space: pre-wrap;
+              opacity: 0.9;
+            ">${message}</div>
+          </div>
+          <button onclick="
+            const text = document.getElementById('${errorId}').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+              this.textContent = '✓';
+              setTimeout(() => this.textContent = '📋', 1000);
+            });
+          " style="
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 4px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            flex-shrink: 0;
+          " title="复制错误信息">📋</button>
+        </div>
+      </div>
+      <style>
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      </style>
+    `;
+    document.body.appendChild(errorDiv);
+    setTimeout(() => errorDiv.remove(), 6000);
   };
 
   const handleClose = () => {

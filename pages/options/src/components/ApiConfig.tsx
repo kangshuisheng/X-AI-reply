@@ -1,17 +1,9 @@
+import { t } from '@extension/i18n';
 import { useStorage } from '@extension/shared';
 import { configStorage, exampleThemeStorage } from '@extension/storage';
 import { useState } from 'react';
-import type { AIModelConfig } from '@extension/storage';
 
 const AI_PROVIDERS = [
-  {
-    id: 'openai',
-    name: 'OpenAI',
-    description: 'GPT-4, GPT-3.5 等模型',
-    apiUrl: 'https://api.openai.com/v1/chat/completions',
-    defaultModel: 'gpt-4o-mini',
-    signupUrl: 'https://platform.openai.com/api-keys',
-  },
   {
     id: 'openrouter',
     name: 'OpenRouter',
@@ -44,22 +36,12 @@ const AI_PROVIDERS = [
     defaultModel: 'qwen-plus',
     signupUrl: 'https://bailian.console.aliyun.com/',
   },
-  {
-    id: 'custom',
-    name: '自定义供应商',
-    description: '兼容 OpenAI 格式的 API',
-    apiUrl: '',
-    defaultModel: '',
-    signupUrl: '',
-  },
 ] as const;
 
 export const ApiConfig = () => {
   const config = useStorage(configStorage);
   const { isLight } = useStorage(exampleThemeStorage);
   const [apiKey, setApiKey] = useState('');
-  const [customUrl, setCustomUrl] = useState(config.aiModel.customApiUrl || '');
-  const [customModel, setCustomModel] = useState(config.aiModel.customModelName || '');
 
   const selectedProvider = AI_PROVIDERS.find(p => p.id === config.aiModel.selectedModel);
 
@@ -75,7 +57,7 @@ export const ApiConfig = () => {
     transition: 'all 0.2s',
   };
 
-  const handleModelChange = async (modelId: AIModelConfig['selectedModel']) => {
+  const handleModelChange = async (modelId: 'openrouter' | 'deepseek' | 'siliconflow' | 'aliyun') => {
     await configStorage.set(prev => ({
       ...prev,
       aiModel: { ...prev.aiModel, selectedModel: modelId },
@@ -94,19 +76,12 @@ export const ApiConfig = () => {
     setApiKey('');
   };
 
-  const handleSaveCustomConfig = async () => {
-    await configStorage.set(prev => ({
-      ...prev,
-      aiModel: { ...prev.aiModel, customApiUrl: customUrl, customModelName: customModel },
-    }));
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div>
         <h2
           style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', color: isLight ? '#1e293b' : '#f1f5f9' }}>
-          AI 供应商配置
+          {t('aiProviderConfig')}
         </h2>
 
         {/* API Key 状态总览 */}
@@ -124,7 +99,7 @@ export const ApiConfig = () => {
               marginBottom: '12px',
               color: isLight ? '#1e293b' : '#f1f5f9',
             }}>
-            配置状态
+            {t('configurationStatus')}
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
             {AI_PROVIDERS.filter(p => p.id !== 'custom').map(provider => {
@@ -184,10 +159,12 @@ export const ApiConfig = () => {
                         color: isSelected ? '#3b82f6' : hasKey ? '#22c55e' : '#ef4444',
                         fontWeight: '500',
                       }}>
-                      {isSelected ? '当前选中' : hasKey ? '已配置' : '未配置'}
+                      {isSelected ? t('currentSelected') : hasKey ? t('configured') : t('notConfigured')}
                     </span>
                     {!isSelected && (
-                      <span style={{ fontSize: '10px', color: isLight ? '#9ca3af' : '#6b7280' }}>点击切换</span>
+                      <span style={{ fontSize: '10px', color: isLight ? '#9ca3af' : '#6b7280' }}>
+                        {t('clickToSwitch')}
+                      </span>
                     )}
                   </div>
                 </button>
@@ -207,12 +184,12 @@ export const ApiConfig = () => {
                 marginBottom: '8px',
                 color: isLight ? '#374151' : '#d1d5db',
               }}>
-              选择 AI 供应商
+              {t('selectAiProvider')}
             </label>
             <select
               id="ai-provider-select"
               value={config.aiModel.selectedModel}
-              onChange={e => handleModelChange(e.target.value as AIModelConfig['selectedModel'])}
+              onChange={e => handleModelChange(e.target.value as 'openrouter' | 'deepseek' | 'siliconflow' | 'aliyun')}
               style={inputStyle}
               onFocus={e => {
                 e.currentTarget.style.borderColor = '#3b82f6';
@@ -268,85 +245,6 @@ export const ApiConfig = () => {
               </div>
             </div>
           )}
-
-          {config.aiModel.selectedModel === 'custom' ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label
-                  htmlFor="custom-api-url"
-                  style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    marginBottom: '8px',
-                    color: isLight ? '#374151' : '#d1d5db',
-                  }}>
-                  自定义 API URL
-                </label>
-                <input
-                  id="custom-api-url"
-                  type="text"
-                  value={customUrl}
-                  onChange={e => setCustomUrl(e.target.value)}
-                  placeholder="https://api.example.com/v1/chat/completions"
-                  style={inputStyle}
-                  onFocus={e => {
-                    e.currentTarget.style.borderColor = '#3b82f6';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                  }}
-                  onBlur={e => {
-                    e.currentTarget.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.5)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="custom-model-name"
-                  style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    marginBottom: '8px',
-                    color: isLight ? '#374151' : '#d1d5db',
-                  }}>
-                  默认模型名称
-                </label>
-                <input
-                  id="custom-model-name"
-                  type="text"
-                  value={customModel}
-                  onChange={e => setCustomModel(e.target.value)}
-                  placeholder="gpt-4"
-                  style={inputStyle}
-                  onFocus={e => {
-                    e.currentTarget.style.borderColor = '#3b82f6';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
-                  }}
-                  onBlur={e => {
-                    e.currentTarget.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.5)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                />
-              </div>
-              <button
-                onClick={handleSaveCustomConfig}
-                style={{
-                  padding: '8px 16px',
-                  background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                  color: 'white',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: '500',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
-                onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}>
-                保存自定义配置
-              </button>
-            </div>
-          ) : null}
 
           <div>
             <div

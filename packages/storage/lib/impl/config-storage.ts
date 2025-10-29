@@ -7,17 +7,13 @@ interface ToneConfig {
 }
 
 interface AIModelConfig {
-  selectedModel: 'openai' | 'openrouter' | 'deepseek' | 'siliconflow' | 'aliyun' | 'custom';
+  selectedModel: 'openrouter' | 'deepseek' | 'siliconflow' | 'aliyun';
   apiKeys: {
-    openai?: string;
     openrouter?: string;
     deepseek?: string;
     siliconflow?: string;
     aliyun?: string;
-    custom?: string;
   };
-  customApiUrl?: string;
-  customModelName?: string;
 }
 
 interface TagModeConfig {
@@ -55,7 +51,7 @@ const defaultTagModes: TagModeConfig[] = [
 
 const defaultConfig: UserConfig = {
   aiModel: {
-    selectedModel: 'openai',
+    selectedModel: 'deepseek',
     apiKeys: {},
   },
   tones: defaultTones,

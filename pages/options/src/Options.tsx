@@ -4,6 +4,7 @@ import { CorpusManager } from './components/CorpusManager';
 import { GeneralSettings } from './components/GeneralSettings';
 import { TagModeManager } from './components/TagModeManager';
 import { ToneManager } from './components/ToneManager';
+import { t } from '@extension/i18n';
 import { useStorage, withErrorBoundary, withSuspense } from '@extension/shared';
 import { exampleThemeStorage } from '@extension/storage';
 import { ErrorDisplay, LoadingSpinner } from '@extension/ui';
@@ -14,11 +15,11 @@ const Options = () => {
   const [activeTab, setActiveTab] = useState<'api' | 'tone' | 'tagmode' | 'corpus' | 'general'>('api');
 
   const tabs = [
-    { id: 'api' as const, label: 'AI 配置' },
-    { id: 'tone' as const, label: '语气管理' },
-    { id: 'tagmode' as const, label: '标签模式' },
-    { id: 'corpus' as const, label: '语料库' },
-    { id: 'general' as const, label: '通用设置' },
+    { id: 'api' as const, label: t('tabAiConfig') },
+    { id: 'tone' as const, label: t('tabToneManagement') },
+    { id: 'tagmode' as const, label: t('tabTagMode') },
+    { id: 'corpus' as const, label: t('tabCorpus') },
+    { id: 'general' as const, label: t('tabGeneralSettings') },
   ];
 
   const containerStyle = {
@@ -51,14 +52,14 @@ const Options = () => {
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
             }}>
-            X AI Reply Assistant
+            {t('optionsTitle')}
           </h1>
           <p
             style={{
               color: isLight ? '#64748b' : '#94a3b8',
               fontSize: '18px',
             }}>
-            配置你的 AI 回复助手
+            {t('optionsSubtitle')}
           </p>
         </div>
 
@@ -132,7 +133,7 @@ const Options = () => {
               e.currentTarget.style.background = 'transparent';
               e.currentTarget.style.borderColor = isLight ? 'rgba(226, 232, 240, 0.5)' : 'rgba(71, 85, 105, 0.3)';
             }}>
-            切换主题
+            {t('toggleThemeButton')}
           </button>
         </div>
       </div>

@@ -1,11 +1,11 @@
 {
   "extensionDescription": {
     "description": "Extension description",
-    "message": "Chrome extension boilerplate developed with Vite, React and Typescript"
+    "message": "AI-powered smart reply assistant for X (Twitter). Generate contextual replies with different tones and styles."
   },
   "extensionName": {
     "description": "Extension name",
-    "message": "Chrome extension boilerplate"
+    "message": "X AI Reply Assistant"
   },
   "toggleTheme": {
     "message": "Toggle theme"
@@ -41,5 +41,116 @@
   },
   "displayErrorReset": {
     "message": "Run Again"
+  },
+  "aiButtonTooltip": {
+    "message": "Generate AI reply"
+  },
+  "selectTone": {
+    "message": "Select tone"
+  },
+  "selectModel": {
+    "message": "Select AI model"
+  },
+  "professional": {
+    "message": "Professional"
+  },
+  "casual": {
+    "message": "Casual"
+  },
+  "humorous": {
+    "message": "Humorous"
+  },
+  "supportive": {
+    "message": "Supportive"
+  },
+  "critical": {
+    "message": "Critical"
+  },
+  "creative": {
+    "message": "Creative"
+  },
+  "generating": {
+    "message": "Generating..."
+  },
+  "copyError": {
+    "message": "Copy Error"
+  },
+  "errorCopied": {
+    "message": "Error details copied to clipboard"
+  },
+  "apiKeyRequired": {
+    "message": "API key required. Please configure in extension options."
+  },
+  "networkError": {
+    "message": "Network error. Please check your connection."
+  },
+  "optionsTitle": {
+    "message": "X AI Reply Assistant"
+  },
+  "optionsSubtitle": {
+    "message": "Configure your AI reply assistant"
+  },
+  "tabAiConfig": {
+    "message": "AI Configuration"
+  },
+  "tabToneManagement": {
+    "message": "Tone Management"
+  },
+  "tabTagMode": {
+    "message": "Tag Mode"
+  },
+  "tabCorpus": {
+    "message": "Corpus"
+  },
+  "tabGeneralSettings": {
+    "message": "General Settings"
+  },
+  "toggleThemeButton": {
+    "message": "Toggle Theme"
+  },
+  "aiProviderConfig": {
+    "message": "AI Provider Configuration"
+  },
+  "configurationStatus": {
+    "message": "Configuration Status"
+  },
+  "currentSelected": {
+    "message": "Current"
+  },
+  "configured": {
+    "message": "Configured"
+  },
+  "notConfigured": {
+    "message": "Not Configured"
+  },
+  "clickToSwitch": {
+    "message": "Click to switch"
+  },
+  "selectAiProvider": {
+    "message": "Select AI Provider"
+  },
+  "apiAddress": {
+    "message": "API Address"
+  },
+  "defaultModel": {
+    "message": "Default Model"
+  },
+  "signupAddress": {
+    "message": "Signup Address"
+  },
+  "getApiKey": {
+    "message": "Get API Key"
+  },
+  "alreadyConfigured": {
+    "message": "Already configured (enter new value to override)"
+  },
+  "enterApiKey": {
+    "message": "Enter {provider} API Key"
+  },
+  "save": {
+    "message": "Save"
+  },
+  "apiKeyConfigured": {
+    "message": "{provider} API Key configured"
   }
 }

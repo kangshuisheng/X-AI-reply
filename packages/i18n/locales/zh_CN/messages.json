@@ -1,0 +1,156 @@
+{
+  "extensionDescription": {
+    "description": "扩展描述",
+    "message": "X (Twitter) AI 智能回复助手，支持多种语气和风格的上下文回复生成。"
+  },
+  "extensionName": {
+    "description": "扩展名称",
+    "message": "X AI 回复助手"
+  },
+  "toggleTheme": {
+    "message": "切换主题"
+  },
+  "injectButton": {
+    "message": "点击注入内容脚本"
+  },
+  "greeting": {
+    "description": "问候消息",
+    "message": "你好，我的名字是 $NAME$",
+    "placeholders": {
+      "name": {
+        "content": "$1",
+        "example": "张三"
+      }
+    }
+  },
+  "hello": {
+    "description": "占位符示例",
+    "message": "你好 $1"
+  },
+  "displayErrorInfo": {
+    "message": "发生错误"
+  },
+  "displayErrorDescription": {
+    "message": "抱歉，加载页面时出现了问题。"
+  },
+  "displayErrorDetailsInfo": {
+    "message": "错误详情："
+  },
+  "displayErrorUnknownErrorInfo": {
+    "message": "未知错误"
+  },
+  "displayErrorReset": {
+    "message": "重新运行"
+  },
+  "aiButtonTooltip": {
+    "message": "生成AI回复"
+  },
+  "selectTone": {
+    "message": "选择语气"
+  },
+  "selectModel": {
+    "message": "选择AI模型"
+  },
+  "professional": {
+    "message": "专业"
+  },
+  "casual": {
+    "message": "随意"
+  },
+  "humorous": {
+    "message": "幽默"
+  },
+  "supportive": {
+    "message": "支持"
+  },
+  "critical": {
+    "message": "批评"
+  },
+  "creative": {
+    "message": "创意"
+  },
+  "generating": {
+    "message": "生成中..."
+  },
+  "copyError": {
+    "message": "复制错误"
+  },
+  "errorCopied": {
+    "message": "错误详情已复制到剪贴板"
+  },
+  "apiKeyRequired": {
+    "message": "需要API密钥，请在扩展选项中配置。"
+  },
+  "networkError": {
+    "message": "网络错误，请检查您的连接。"
+  },
+  "optionsTitle": {
+    "message": "X AI 回复助手"
+  },
+  "optionsSubtitle": {
+    "message": "配置你的 AI 回复助手"
+  },
+  "tabAiConfig": {
+    "message": "AI 配置"
+  },
+  "tabToneManagement": {
+    "message": "语气管理"
+  },
+  "tabTagMode": {
+    "message": "标签模式"
+  },
+  "tabCorpus": {
+    "message": "语料库"
+  },
+  "tabGeneralSettings": {
+    "message": "通用设置"
+  },
+  "toggleThemeButton": {
+    "message": "切换主题"
+  },
+  "aiProviderConfig": {
+    "message": "AI 供应商配置"
+  },
+  "configurationStatus": {
+    "message": "配置状态"
+  },
+  "currentSelected": {
+    "message": "当前选中"
+  },
+  "configured": {
+    "message": "已配置"
+  },
+  "notConfigured": {
+    "message": "未配置"
+  },
+  "clickToSwitch": {
+    "message": "点击切换"
+  },
+  "selectAiProvider": {
+    "message": "选择 AI 供应商"
+  },
+  "apiAddress": {
+    "message": "API 地址"
+  },
+  "defaultModel": {
+    "message": "默认模型"
+  },
+  "signupAddress": {
+    "message": "申请地址"
+  },
+  "getApiKey": {
+    "message": "获取 API Key"
+  },
+  "alreadyConfigured": {
+    "message": "已配置 (输入新值覆盖)"
+  },
+  "enterApiKey": {
+    "message": "输入 {provider} API Key"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "apiKeyConfigured": {
+    "message": "{provider} API Key 已配置"
+  }
+}

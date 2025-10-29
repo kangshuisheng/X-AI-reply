@@ -1,4 +1,5 @@
 import { getSystemTheme, getThemeColors } from '../utils/theme';
+import { t } from '@extension/i18n';
 import { configStorage } from '@extension/storage';
 import { useEffect, useState } from 'react';
 import type { ToneConfig, TagModeConfig } from '@extension/storage';
@@ -18,10 +19,18 @@ const toneIcons = {
   questioning: '🤔',
 };
 
+const AI_PROVIDERS = {
+  deepseek: 'DeepSeek',
+  siliconflow: '硅基流动',
+  aliyun: '阿里云百炼',
+  openrouter: 'OpenRouter',
+};
+
 export const ToneSelector = ({ position, onSelect, onClose, onTagModeClick }: ToneSelectorProps) => {
   const [tones, setTones] = useState<ToneConfig[]>([]);
   const [selectedTagMode, setSelectedTagMode] = useState<string | undefined>();
   const [tagModes, setTagModes] = useState<TagModeConfig[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>('deepseek');
   const theme = getSystemTheme();
   const colors = getThemeColors(theme);
 
@@ -30,8 +39,15 @@ export const ToneSelector = ({ position, onSelect, onClose, onTagModeClick }: To
       setTones(config.tones || []);
       setSelectedTagMode(config.selectedTagMode);
       setTagModes(config.tagModes || []);
+      setSelectedModel(config.aiModel.selectedModel);
     });
   }, []);
+
+  const handleModelChange = async (modelId: string) => {
+    setSelectedModel(modelId);
+    const config = await configStorage.get();
+    await configStorage.set({ ...config, aiModel: { ...config.aiModel, selectedModel: modelId } });
+  };
 
   return (
     <div
@@ -51,12 +67,46 @@ export const ToneSelector = ({ position, onSelect, onClose, onTagModeClick }: To
         padding: '16px',
         fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: '700', color: colors.text, margin: 0 }}>选择回复语气</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+        <div style={{ flex: 1 }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: colors.text, marginTop: 0, marginBottom: '8px' }}>
+            {t('selectTone')}
+          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '11px', color: colors.textSecondary, whiteSpace: 'nowrap' }}>
+              {t('selectModel')}:
+            </span>
+            <select
+              value={selectedModel}
+              onChange={e => {
+                e.stopPropagation();
+                handleModelChange(e.target.value);
+              }}
+              onClick={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onFocus={e => e.stopPropagation()}
+              style={{
+                padding: '2px 6px',
+                borderRadius: '4px',
+                border: `1px solid ${colors.cardBorder}`,
+                background: colors.cardBg,
+                color: colors.text,
+                fontSize: '11px',
+                cursor: 'pointer',
+                minWidth: '80px',
+              }}>
+              {Object.entries(AI_PROVIDERS).map(([id, name]) => (
+                <option key={id} value={id} style={{ background: colors.cardBg, color: colors.text }}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={onTagModeClick}
-            title="标签模式"
+            title={t('tagMode') || '标签模式'}
             style={{
               width: '32px',
               height: '32px',
@@ -105,7 +155,7 @@ export const ToneSelector = ({ position, onSelect, onClose, onTagModeClick }: To
           <div style={{ fontSize: '12px', color: '#1d4ed8', fontWeight: '500' }}>
             当前标签模式：{(tagModes || []).find(m => m.id === selectedTagMode)?.name}
           </div>
-          <div style={{ fontSize: '11px', color: '#1e40af', marginTop: '2px' }}>
+          <div style={{ fontSize: '11px', color: '#1e40af', marginTop: '2px', marginBottom: 0 }}>
             {(tagModes || []).find(m => m.id === selectedTagMode)?.tags}
           </div>
         </div>
