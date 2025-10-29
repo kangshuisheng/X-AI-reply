@@ -36,6 +36,14 @@ const AI_PROVIDERS = [
     defaultModel: 'qwen-plus',
     signupUrl: 'https://bailian.console.aliyun.com/',
   },
+  {
+    id: 'custom',
+    name: '自定义',
+    description: '使用自定义 API 地址和模型',
+    apiUrl: '',
+    defaultModel: '',
+    signupUrl: '',
+  },
 ] as const;
 
 export const ApiConfig = () => {

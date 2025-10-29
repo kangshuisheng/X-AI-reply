@@ -5,17 +5,20 @@ export const AIDetectionSettings = () => {
   const config = useStorage(configStorage);
   const { isLight } = useStorage(exampleThemeStorage);
 
+  // 安全获取AI检测配置，提供默认值
+  const aiDetection = config.aiDetection || { enabled: true, showConfidence: true };
+
   const handleToggleDetection = async (enabled: boolean) => {
     await configStorage.set(prev => ({
       ...prev,
-      aiDetection: { ...prev.aiDetection, enabled },
+      aiDetection: { ...aiDetection, enabled },
     }));
   };
 
   const handleToggleConfidence = async (showConfidence: boolean) => {
     await configStorage.set(prev => ({
       ...prev,
-      aiDetection: { ...prev.aiDetection, showConfidence },
+      aiDetection: { ...aiDetection, showConfidence },
     }));
   };
 
@@ -72,10 +75,10 @@ export const AIDetectionSettings = () => {
               <div style={{ fontSize: '14px', color: isLight ? '#64748b' : '#94a3b8' }}>在推文旁边显示 AI 检测标识</div>
             </div>
             <button
-              style={switchStyle(config.aiDetection.enabled)}
-              onClick={() => handleToggleDetection(!config.aiDetection.enabled)}
+              style={switchStyle(aiDetection.enabled)}
+              onClick={() => handleToggleDetection(!aiDetection.enabled)}
               aria-label="切换AI检测">
-              <div style={switchKnobStyle(config.aiDetection.enabled)} />
+              <div style={switchKnobStyle(aiDetection.enabled)} />
             </button>
           </div>
 
@@ -89,7 +92,7 @@ export const AIDetectionSettings = () => {
               background: isLight ? 'rgba(255, 255, 255, 0.8)' : 'rgba(30, 41, 59, 0.8)',
               border: isLight ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid rgba(71, 85, 105, 0.5)',
               borderRadius: '12px',
-              opacity: config.aiDetection.enabled ? 1 : 0.5,
+              opacity: aiDetection.enabled ? 1 : 0.5,
             }}>
             <div>
               <div style={{ fontWeight: '600', color: isLight ? '#1e293b' : '#f1f5f9', marginBottom: '4px' }}>
@@ -100,11 +103,11 @@ export const AIDetectionSettings = () => {
               </div>
             </div>
             <button
-              style={switchStyle(config.aiDetection.showConfidence)}
-              onClick={() => config.aiDetection.enabled && handleToggleConfidence(!config.aiDetection.showConfidence)}
-              disabled={!config.aiDetection.enabled}
+              style={switchStyle(aiDetection.showConfidence)}
+              onClick={() => aiDetection.enabled && handleToggleConfidence(!aiDetection.showConfidence)}
+              disabled={!aiDetection.enabled}
               aria-label="切换置信度显示">
-              <div style={switchKnobStyle(config.aiDetection.showConfidence)} />
+              <div style={switchKnobStyle(aiDetection.showConfidence)} />
             </button>
           </div>
 

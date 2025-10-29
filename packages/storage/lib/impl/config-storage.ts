@@ -99,5 +99,28 @@ const configStorage = createStorage<UserConfig>('x-ai-reply-config', defaultConf
   liveUpdate: true,
 });
 
+// 配置迁移逻辑，为现有用户添加缺失的字段
+const migrateConfig = async () => {
+  const currentConfig = await configStorage.get();
+  let needsUpdate = false;
+  const updatedConfig = { ...currentConfig };
+
+  // 检查是否缺少aiDetection字段
+  if (!currentConfig.aiDetection) {
+    updatedConfig.aiDetection = {
+      enabled: true,
+      showConfidence: true,
+    };
+    needsUpdate = true;
+  }
+
+  if (needsUpdate) {
+    await configStorage.set(updatedConfig);
+  }
+};
+
+// 在模块加载时执行迁移
+migrateConfig().catch(console.error);
+
 export type { ToneConfig, AIModelConfig, UserConfig, TagModeConfig, ModelProvider };
 export { configStorage };
