@@ -96,11 +96,43 @@ export default function App() {
         (container as HTMLElement).style.position = 'relative';
         container.appendChild(button);
 
-        // 获取推文内容
-        const tweetText = document.querySelector('[data-testid="tweetText"]')?.textContent || '';
-        const quotedTweet = document.querySelector('[data-testid="quotedTweet"]');
-        const quotedText = quotedTweet?.querySelector('[data-testid="tweetText"]')?.textContent || '';
-        setCurrentTweetContent(quotedText ? `${tweetText}\n\n引用: ${quotedText}` : tweetText);
+        // 获取推文内容（支持回复链）
+        const getTweetContent = () => {
+          // 获取主推文
+          const mainTweet = document.querySelector('[data-testid="tweetText"]')?.textContent || '';
+
+          // 获取引用推文
+          const quotedTweet = document.querySelector('[data-testid="quotedTweet"]');
+          const quotedText = quotedTweet?.querySelector('[data-testid="tweetText"]')?.textContent || '';
+
+          // 获取回复链中的所有推文
+          const replyChain = Array.from(document.querySelectorAll('[data-testid="tweet"]'))
+            .map(tweet => {
+              const tweetText = tweet.querySelector('[data-testid="tweetText"]')?.textContent;
+              const author = tweet.querySelector('[data-testid="User-Name"]')?.textContent;
+              return tweetText && author ? `${author}: ${tweetText}` : null;
+            })
+            .filter(Boolean)
+            .slice(0, 5); // 限制最多5条推文避免太长
+
+          let content = '';
+          if (replyChain.length > 1) {
+            // 如果有回复链，包含上下文
+            content = `对话上下文:\n${replyChain.join('\n')}\n\n当前回复: ${mainTweet}`;
+          } else {
+            // 单条推文
+            content = mainTweet;
+          }
+
+          // 添加引用内容
+          if (quotedText) {
+            content += `\n\n引用: ${quotedText}`;
+          }
+
+          return content;
+        };
+
+        setCurrentTweetContent(getTweetContent());
       }
     };
 
@@ -176,7 +208,8 @@ export default function App() {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Element;
       // 检查是否点击了AI按钮或弹窗内容
-      if (!target.closest('#x-ai-reply-root') && !target.closest('.ai-reply-button')) {
+      const isClickInsideDialog = target.closest('[role="dialog"]') || target.closest('.ai-reply-button');
+      if (!isClickInsideDialog) {
         setShowToneSelector(false);
         setShowReplyList(false);
         setShowTagModeSelector(false);

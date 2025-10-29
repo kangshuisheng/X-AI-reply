@@ -3,6 +3,7 @@ import { t } from '@extension/i18n';
 import { configStorage } from '@extension/storage';
 import { useEffect, useState } from 'react';
 import type { ToneConfig, TagModeConfig } from '@extension/storage';
+import type { ModelProvider } from '@extension/storage/lib/impl/config-storage';
 
 interface ToneSelectorProps {
   position: { top: number; left: number; width: number };
@@ -30,7 +31,7 @@ export const ToneSelector = ({ position, onSelect, onClose, onTagModeClick }: To
   const [tones, setTones] = useState<ToneConfig[]>([]);
   const [selectedTagMode, setSelectedTagMode] = useState<string | undefined>();
   const [tagModes, setTagModes] = useState<TagModeConfig[]>([]);
-  const [selectedModel, setSelectedModel] = useState<string>('deepseek');
+  const [selectedModel, setSelectedModel] = useState<ModelProvider>('deepseek');
   const theme = getSystemTheme();
   const colors = getThemeColors(theme);
 
@@ -43,7 +44,7 @@ export const ToneSelector = ({ position, onSelect, onClose, onTagModeClick }: To
     });
   }, []);
 
-  const handleModelChange = async (modelId: string) => {
+  const handleModelChange = async (modelId: ModelProvider) => {
     setSelectedModel(modelId);
     const config = await configStorage.get();
     await configStorage.set({ ...config, aiModel: { ...config.aiModel, selectedModel: modelId } });
@@ -80,7 +81,7 @@ export const ToneSelector = ({ position, onSelect, onClose, onTagModeClick }: To
               value={selectedModel}
               onChange={e => {
                 e.stopPropagation();
-                handleModelChange(e.target.value);
+                handleModelChange(e.target.value as ModelProvider);
               }}
               onClick={e => e.stopPropagation()}
               onMouseDown={e => e.stopPropagation()}
@@ -106,7 +107,7 @@ export const ToneSelector = ({ position, onSelect, onClose, onTagModeClick }: To
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={onTagModeClick}
-            title={t('tagMode') || '标签模式'}
+            title={t('tabTagMode') || '标签模式'}
             style={{
               width: '32px',
               height: '32px',

@@ -6,8 +6,9 @@ interface ToneConfig {
   prompt: string;
 }
 
+type ModelProvider = 'openrouter' | 'deepseek' | 'siliconflow' | 'aliyun';
 interface AIModelConfig {
-  selectedModel: 'openrouter' | 'deepseek' | 'siliconflow' | 'aliyun';
+  selectedModel: ModelProvider;
   apiKeys: {
     openrouter?: string;
     deepseek?: string;
@@ -65,5 +66,5 @@ const configStorage = createStorage<UserConfig>('x-ai-reply-config', defaultConf
   liveUpdate: true,
 });
 
-export type { ToneConfig, AIModelConfig, UserConfig, TagModeConfig };
+export type { ToneConfig, AIModelConfig, UserConfig, TagModeConfig, ModelProvider };
 export { configStorage };
