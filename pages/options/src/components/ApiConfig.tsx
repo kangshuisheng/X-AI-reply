@@ -50,11 +50,16 @@ export const ApiConfig = () => {
   const handleAddProvider = async () => {
     if (!newProvider.name || !newProvider.apiUrl || !newProvider.modelId) return;
 
+    let apiUrl = newProvider.apiUrl.trim();
+    if (!apiUrl.endsWith('/v1/chat/completions')) {
+      apiUrl = apiUrl.replace(/\/$/, '') + '/v1/chat/completions';
+    }
+
     const providerId = 'custom_' + Date.now();
     const provider: ProviderConfig = {
       id: providerId,
       name: newProvider.name,
-      apiUrl: newProvider.apiUrl,
+      apiUrl,
       defaultModels: [{ id: newProvider.modelId, name: newProvider.modelName || newProvider.modelId, isDefault: true }],
       customModels: [],
       isCustom: true,
@@ -291,9 +296,20 @@ export const ApiConfig = () => {
               </div>
 
               <div>
-                <label className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
-                  {selectedProvider.name} API Key
-                </label>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className={cn('text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
+                    {selectedProvider.name} API Key
+                  </label>
+                  {selectedProvider.signupUrl && (
+                    <a
+                      href={selectedProvider.signupUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-500 hover:text-blue-600 hover:underline">
+                      {t('getApiKey')} →
+                    </a>
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <input
                     type="password"
@@ -353,6 +369,16 @@ export const ApiConfig = () => {
                 <h3 className={cn('mb-3 font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>
                   {t('addCustomProviderTitle')}
                 </h3>
+                <div
+                  className={cn(
+                    'mb-3 rounded-lg border p-3 text-xs',
+                    isLight
+                      ? 'border-blue-200 bg-blue-50 text-blue-700'
+                      : 'border-blue-500/30 bg-blue-500/10 text-blue-300',
+                  )}>
+                  💡 提示：仅支持 OpenAI 兼容格式的 API（如 new-api、one-api 等）。API URL 会自动补全
+                  /v1/chat/completions 路径。
+                </div>
                 <div className="flex flex-col gap-3">
                   <input
                     type="text"
@@ -364,16 +390,24 @@ export const ApiConfig = () => {
                       isLight ? 'border-slate-200 bg-white' : 'border-slate-600 bg-slate-700 text-white',
                     )}
                   />
-                  <input
-                    type="text"
-                    placeholder={t('apiUrl')}
-                    value={newProvider.apiUrl}
-                    onChange={e => setNewProvider({ ...newProvider, apiUrl: e.target.value })}
-                    className={cn(
-                      'rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
-                      isLight ? 'border-slate-200 bg-white' : 'border-slate-600 bg-slate-700 text-white',
-                    )}
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="例如：https://api.example.com"
+                      value={newProvider.apiUrl}
+                      onChange={e => setNewProvider({ ...newProvider, apiUrl: e.target.value })}
+                      className={cn(
+                        'w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500',
+                        isLight ? 'border-slate-200 bg-white' : 'border-slate-600 bg-slate-700 text-white',
+                      )}
+                    />
+                    <div className={cn('mt-1 text-xs', isLight ? 'text-gray-500' : 'text-gray-400')}>
+                      自动补全为：
+                      {newProvider.apiUrl.trim()
+                        ? newProvider.apiUrl.trim().replace(/\/$/, '') + '/v1/chat/completions'
+                        : '...'}
+                    </div>
+                  </div>
                   <input
                     type="text"
                     placeholder={t('modelId')}

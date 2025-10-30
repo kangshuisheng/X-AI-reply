@@ -35,7 +35,8 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
       setTones(config.tones || []);
       setSelectedTagMode(config.selectedTagMode);
       setTagModes(config.tagModes || []);
-      setProviders(config.aiModel.providers || []);
+      const configuredProviders = (config.aiModel.providers || []).filter(p => config.aiModel.apiKeys[p.id]);
+      setProviders(configuredProviders);
       setSelectedProvider(config.aiModel.selectedProvider);
       setSelectedModel(config.aiModel.selectedModel);
     });
@@ -281,40 +282,46 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
                 ✕
               </button>
             </div>
-            {providers.map(provider => {
-              const models = [...provider.defaultModels, ...provider.customModels];
-              return (
-                <div key={provider.id} style={{ marginBottom: '8px' }}>
-                  <div
-                    style={{ fontSize: '10px', color: colors.textSecondary, marginBottom: '4px', fontWeight: '500' }}>
-                    {provider.name}
+            {providers.length > 0 ? (
+              providers.map(provider => {
+                const models = [...provider.defaultModels, ...provider.customModels];
+                return (
+                  <div key={provider.id} style={{ marginBottom: '8px' }}>
+                    <div
+                      style={{ fontSize: '10px', color: colors.textSecondary, marginBottom: '4px', fontWeight: '500' }}>
+                      {provider.name}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: '8px' }}>
+                      {models.map(model => (
+                        <button
+                          key={model.id}
+                          onClick={() => handleModelChange(model.id, provider.id)}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: '4px',
+                            border: `1px solid ${selectedModel === model.id && selectedProvider === provider.id ? '#3b82f6' : colors.cardBorder}`,
+                            background:
+                              selectedModel === model.id && selectedProvider === provider.id
+                                ? 'rgba(59, 130, 246, 0.1)'
+                                : 'transparent',
+                            color: colors.text,
+                            fontSize: '11px',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            transition: 'all 0.2s',
+                          }}>
+                          {model.name}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingLeft: '8px' }}>
-                    {models.map(model => (
-                      <button
-                        key={model.id}
-                        onClick={() => handleModelChange(model.id, provider.id)}
-                        style={{
-                          padding: '6px 10px',
-                          borderRadius: '4px',
-                          border: `1px solid ${selectedModel === model.id && selectedProvider === provider.id ? '#3b82f6' : colors.cardBorder}`,
-                          background:
-                            selectedModel === model.id && selectedProvider === provider.id
-                              ? 'rgba(59, 130, 246, 0.1)'
-                              : 'transparent',
-                          color: colors.text,
-                          fontSize: '11px',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.2s',
-                        }}>
-                        {model.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div style={{ padding: '12px', textAlign: 'center', color: colors.textSecondary, fontSize: '12px' }}>
+                请先在设置中配置 API Key
+              </div>
+            )}
           </div>
         )}
       </div>

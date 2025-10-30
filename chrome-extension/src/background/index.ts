@@ -49,8 +49,6 @@ const handleGenerateReply = async (payload: { tweetContent: string; toneId: stri
   const apiUrl = provider.apiUrl;
   const modelName = selectedModel;
 
-  // 让 AI 自己判断和匹配语言
-
   const systemPrompt = `You are helping a regular social media user reply to tweets. Generate replies from an INDIVIDUAL USER perspective, NOT as a project team or official account.
 
 CRITICAL RULES:
@@ -62,6 +60,8 @@ CRITICAL RULES:
 6. NO corporate speak, NO official announcements, NO team perspectives
 7. Reply in the SAME LANGUAGE as the original tweet
 8. Return only ${config.replyCount} replies, each on a new line, no numbering
+9. ABSOLUTELY NO Markdown syntax (**, ##, -, *, _, etc.) - output PLAIN TEXT ONLY
+10. NO formatting, NO bold, NO italics, NO lists - just natural conversational text
 
 Think: "How would I personally react to this?" NOT "How should our team respond?"`;
 
@@ -71,7 +71,7 @@ Your personality/tone: ${tone.prompt}
 
 ${config.corpus.length > 0 ? `Your typical writing style examples:\n${config.corpus.slice(0, 5).join('\n')}\n\n(Only use this style if it matches the tweet's language)` : ''}
 
-REMEMBER: You are an individual user sharing YOUR personal take, NOT representing any team or project. Use "I think/feel/noticed" not "we believe/our team".
+REMEMBER: You are an individual user sharing YOUR personal take, NOT representing any team or project. Use "I think/feel/noticed" not "we believe/our team". Output PLAIN TEXT ONLY - NO Markdown formatting whatsoever.
 
 Generate ${config.replyCount} different personal reactions/replies in the SAME language as the tweet.`;
 
@@ -89,22 +89,28 @@ Generate ${config.replyCount} different personal reactions/replies in the SAME l
       ],
       temperature: 0.8,
     }),
+  }).catch(err => {
+    throw new Error(`网络请求失败: ${err.message}`);
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    console.error(`API Error [${selectedModel}]:`, {
-      status: response.status,
-      statusText: response.statusText,
-      error,
-      apiUrl,
-      modelName,
-    });
-    throw new Error(`${selectedModel} API failed (${response.status}): ${error}`);
+    const errorText = await response.text();
+    let errorMessage;
+    try {
+      const errorData = JSON.parse(errorText);
+      errorMessage = errorData.error?.message || errorData.message || errorText;
+    } catch {
+      errorMessage = errorText;
+    }
+    throw new Error(`API 调用失败 (${response.status}): ${errorMessage}`);
   }
 
   const data = await response.json();
-  const content = data.choices[0]?.message?.content || '';
+  if (!data.choices?.[0]?.message?.content) {
+    throw new Error('API 返回数据格式错误');
+  }
+
+  const content = data.choices[0].message.content;
   let replies = content
     .split('\n')
     .map((r: string) => r.trim())
