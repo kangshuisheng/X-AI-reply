@@ -111,17 +111,6 @@ const defaultTagModes: TagModeConfig[] = [
 
 const defaultProviders: ProviderConfig[] = [
   {
-    id: 'deepseek',
-    name: 'DeepSeek',
-    apiUrl: 'https://api.deepseek.com/v1/chat/completions',
-    signupUrl: 'https://platform.deepseek.com/api_keys',
-    defaultModels: [
-      { id: 'deepseek-chat', name: 'DeepSeek Chat', isDefault: true },
-      { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', isDefault: true },
-    ],
-    customModels: [],
-  },
-  {
     id: 'siliconflow',
     name: '硅基流动',
     apiUrl: 'https://api.siliconflow.cn/v1/chat/completions',
@@ -129,6 +118,17 @@ const defaultProviders: ProviderConfig[] = [
     defaultModels: [
       { id: 'deepseek-ai/DeepSeek-V3', name: 'DeepSeek V3', isDefault: true },
       { id: 'Qwen/Qwen2.5-7B-Instruct', name: 'Qwen 2.5 7B', isDefault: true },
+    ],
+    customModels: [],
+  },
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    apiUrl: 'https://api.deepseek.com/v1/chat/completions',
+    signupUrl: 'https://platform.deepseek.com/api_keys',
+    defaultModels: [
+      { id: 'deepseek-chat', name: 'DeepSeek Chat', isDefault: true },
+      { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', isDefault: true },
     ],
     customModels: [],
   },
