@@ -1,22 +1,25 @@
-import { AIDetectButton } from './components/AIDetectButton';
 import { showConfigPrompt } from './components/ConfigPrompt';
 import { ReplyList } from './components/ReplyList';
-import { TagModeSelector } from './components/TagModeSelector';
 import { ToneSelector } from './components/ToneSelector';
 import { useReplyGeneration } from './hooks/useReplyGeneration';
 import { getTweetContent } from './utils/tweetContent';
 import { t } from '@extension/i18n';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { createRoot } from 'react-dom/client';
+
+const isExtensionValid = () => {
+  try {
+    return chrome.runtime?.id !== undefined;
+  } catch {
+    return false;
+  }
+};
 
 export default function App() {
   const [showToneSelector, setShowToneSelector] = useState(false);
   const [showReplyList, setShowReplyList] = useState(false);
-  const [showTagModeSelector, setShowTagModeSelector] = useState(false);
   const [currentTweetContent, setCurrentTweetContent] = useState('');
   const [currentToneId, setCurrentToneId] = useState('');
-  const [aiDetectionEnabled, setAiDetectionEnabled] = useState(false);
 
   const { replies, loading, generateReplies, insertReply, setReplies } = useReplyGeneration();
 
@@ -34,6 +37,8 @@ export default function App() {
   };
 
   const addAIButton = (replyBox: Element) => {
+    if (!isExtensionValid()) return;
+
     const container = replyBox.closest('[data-testid="tweetTextarea_0RichTextInputContainer"]');
     if (container && !container.querySelector('.ai-reply-button')) {
       const button = document.createElement('button');
@@ -85,86 +90,25 @@ export default function App() {
     }
   };
 
-  const addAIDetectButtons = () => {
-    if (!aiDetectionEnabled) return;
-
-    const tweets = document.querySelectorAll('[data-testid="tweet"]:not([data-ai-detect-added])');
-    tweets.forEach(tweet => {
-      tweet.setAttribute('data-ai-detect-added', 'true');
-
-      const tweetText = tweet.querySelector('[data-testid="tweetText"]')?.textContent;
-      if (!tweetText) return;
-
-      const userNameElement = tweet.querySelector('[data-testid="User-Name"]');
-      if (!userNameElement) return;
-
-      const buttonContainer = document.createElement('span');
-      buttonContainer.className = 'ai-detect-button-container';
-      buttonContainer.style.cssText = 'display: inline-block; vertical-align: middle;';
-      userNameElement.appendChild(buttonContainer);
-
-      const root = createRoot(buttonContainer);
-      root.render(
-        <AIDetectButton
-          tweetContent={tweetText}
-          onResult={(isAI, confidence) => {
-            const badge = document.createElement('span');
-            badge.style.cssText = `
-              display: inline-flex;
-              align-items: center;
-              gap: 4px;
-              padding: 2px 6px;
-              border-radius: 12px;
-              background: ${isAI ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'};
-              border: 1px solid ${isAI ? '#ef4444' : '#10b981'};
-              font-size: 10px;
-              font-weight: 500;
-              color: ${isAI ? '#ef4444' : '#10b981'};
-              margin-left: 8px;
-            `;
-            badge.innerHTML = `
-              <span>${isAI ? '🤖' : '👤'}</span>
-              <span style="font-size: 9px; opacity: 0.8">${Math.round(confidence * 100)}%</span>
-            `;
-            buttonContainer.replaceWith(badge);
-          }}
-        />,
-      );
-    });
-  };
-
   const setupReplyBoxListener = () => {
+    if (!isExtensionValid()) return () => {};
+
     const existingReplyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
     if (existingReplyBox) {
       addAIButton(existingReplyBox);
     }
 
-    addAIDetectButtons();
-
     let textareaObserverRunning = false;
-    const textareaObserver = new MutationObserver(mutations => {
-      if (textareaObserverRunning) return;
+    const textareaObserver = new MutationObserver(() => {
+      if (!isExtensionValid() || textareaObserverRunning) return;
       textareaObserverRunning = true;
 
       requestAnimationFrame(() => {
-        let shouldCheckButtons = false;
-
-        for (const mutation of mutations) {
-          if (mutation.addedNodes.length > 0) {
-            shouldCheckButtons = true;
-            break;
-          }
-        }
-
         const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
         if (replyBox) {
           setTimeout(() => addAIButton(replyBox), 50);
-        } else if (!showToneSelector && !showReplyList && !showTagModeSelector) {
+        } else if (!showToneSelector && !showReplyList) {
           document.querySelector('.ai-reply-button')?.remove();
-        }
-
-        if (shouldCheckButtons) {
-          addAIDetectButtons();
         }
 
         textareaObserverRunning = false;
@@ -183,26 +127,14 @@ export default function App() {
   };
 
   useEffect(() => {
-    const loadConfig = async () => {
-      try {
-        const { configStorage } = await import('@extension/storage');
-        const config = await configStorage.get();
-        setAiDetectionEnabled(config.aiDetection.enabled);
-      } catch (error) {
-        console.error('Failed to load config:', error);
-      }
-    };
-    loadConfig();
-  }, []);
+    if (!isExtensionValid()) return;
 
-  useEffect(() => {
     let cleanup: (() => void) | null = null;
     let currentUrl = window.location.href;
 
     const resetState = () => {
       setShowToneSelector(false);
       setShowReplyList(false);
-      setShowTagModeSelector(false);
       setReplies([]);
       document.querySelector('.ai-reply-button')?.remove();
       cleanup?.();
@@ -223,7 +155,7 @@ export default function App() {
 
     let observerRunning = false;
     const observer = new MutationObserver(() => {
-      if (observerRunning) return;
+      if (!isExtensionValid() || observerRunning) return;
       observerRunning = true;
 
       requestAnimationFrame(() => {
@@ -247,7 +179,6 @@ export default function App() {
       if (!isClickInsideDialog) {
         setShowToneSelector(false);
         setShowReplyList(false);
-        setShowTagModeSelector(false);
       }
     };
 
@@ -255,7 +186,7 @@ export default function App() {
     observer.observe(document.body, { childList: true, subtree: true });
     window.addEventListener('popstate', handlePopState);
 
-    if (showToneSelector || showReplyList || showTagModeSelector) {
+    if (showToneSelector || showReplyList) {
       setTimeout(() => {
         document.addEventListener('click', handleClickOutside);
       }, 100);
@@ -270,9 +201,11 @@ export default function App() {
       document.removeEventListener('click', handleClickOutside);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showToneSelector, showReplyList, showTagModeSelector]);
+  }, [showToneSelector, showReplyList]);
 
   const handleAIButtonClick = async () => {
+    if (!isExtensionValid()) return;
+
     try {
       const response = await chrome.runtime.sendMessage({ type: 'CHECK_CONFIG' });
       if (!response.hasApiKey) {
@@ -282,15 +215,6 @@ export default function App() {
       setShowToneSelector(true);
     } catch (error) {
       console.error('Failed to check config:', error);
-      if (
-        typeof error === 'object' &&
-        error !== null &&
-        'message' in error &&
-        typeof (error as { message?: unknown }).message === 'string' &&
-        (error as { message: string }).message.includes('Extension context invalidated')
-      ) {
-        window.location.reload();
-      }
     }
   };
 
@@ -327,26 +251,7 @@ export default function App() {
     <>
       {showToneSelector &&
         createPortal(
-          <ToneSelector
-            position={getInputBoxPosition()}
-            onSelect={handleToneSelect}
-            onClose={handleClose}
-            onTagModeClick={() => {
-              setShowToneSelector(false);
-              setShowTagModeSelector(true);
-            }}
-          />,
-          document.body,
-        )}
-      {showTagModeSelector &&
-        createPortal(
-          <TagModeSelector
-            position={getInputBoxPosition()}
-            onClose={() => {
-              setShowTagModeSelector(false);
-              setShowToneSelector(true);
-            }}
-          />,
+          <ToneSelector position={getInputBoxPosition()} onSelect={handleToneSelect} onClose={handleClose} />,
           document.body,
         )}
       {showReplyList &&

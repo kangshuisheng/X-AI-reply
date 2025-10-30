@@ -1,3 +1,4 @@
+import { t } from '@extension/i18n';
 import { useStorage } from '@extension/shared';
 import { configStorage, exampleThemeStorage } from '@extension/storage';
 import { cn } from '@extension/ui';
@@ -35,11 +36,13 @@ export const ToneManager = () => {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h2 className={cn('text-xl font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>回复语气管理</h2>
+        <h2 className={cn('text-xl font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>
+          {t('toneManagement')}
+        </h2>
         <button
           onClick={() => setIsAdding(!isAdding)}
           className="rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 px-4 py-2 font-medium text-white transition-all hover:-translate-y-0.5">
-          {isAdding ? '取消' : '+ 添加语气'}
+          {isAdding ? t('cancel') : t('addTone')}
         </button>
       </div>
 
@@ -53,14 +56,14 @@ export const ToneManager = () => {
             <label
               htmlFor="tone-name-input"
               className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
-              语气名称
+              {t('toneName')}
             </label>
             <input
               id="tone-name-input"
               type="text"
               value={newTone.name}
               onChange={e => setNewTone({ ...newTone, name: e.target.value })}
-              placeholder="例如：专业、友好"
+              placeholder={t('toneNamePlaceholder')}
               className={cn(
                 'w-full rounded-xl border px-4 py-3 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10',
                 isLight
@@ -73,13 +76,13 @@ export const ToneManager = () => {
             <label
               htmlFor="tone-prompt-textarea"
               className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
-              提示词
+              {t('prompt')}
             </label>
             <textarea
               id="tone-prompt-textarea"
               value={newTone.prompt}
               onChange={e => setNewTone({ ...newTone, prompt: e.target.value })}
-              placeholder="描述这种语气的特点，例如：以专业、正式的语气回复"
+              placeholder={t('promptPlaceholder')}
               rows={3}
               className={cn(
                 'w-full resize-y rounded-xl border px-4 py-3 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10',
@@ -98,7 +101,7 @@ export const ToneManager = () => {
                 ? 'cursor-pointer bg-gradient-to-r from-green-500 to-green-600 text-white hover:-translate-y-0.5'
                 : 'cursor-not-allowed bg-gray-400 text-white',
             )}>
-            保存
+            {t('save')}
           </button>
         </div>
       )}
@@ -118,7 +121,7 @@ export const ToneManager = () => {
             <button
               onClick={() => handleDeleteTone(tone.id)}
               className="ml-4 rounded-md border border-red-600 px-3 py-1 text-sm text-red-600 transition-all hover:bg-red-600 hover:text-white">
-              删除
+              {t('delete')}
             </button>
           </div>
         ))}

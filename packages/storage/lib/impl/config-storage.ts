@@ -6,15 +6,26 @@ interface ToneConfig {
   prompt: string;
 }
 
-type ModelProvider = 'openrouter' | 'deepseek' | 'siliconflow' | 'aliyun';
+interface ModelInfo {
+  id: string;
+  name: string;
+  isDefault?: boolean; // 是否为预设模型
+}
+
+interface ProviderConfig {
+  id: string;
+  name: string;
+  apiUrl: string;
+  defaultModels: ModelInfo[]; // 预设模型（不可删除）
+  customModels: ModelInfo[]; // 用户添加的模型（可删除）
+  isCustom?: boolean; // 是否为自定义提供商
+}
+
 interface AIModelConfig {
-  selectedModel: ModelProvider;
-  apiKeys: {
-    openrouter?: string;
-    deepseek?: string;
-    siliconflow?: string;
-    aliyun?: string;
-  };
+  providers: ProviderConfig[];
+  selectedProvider: string;
+  selectedModel: string;
+  apiKeys: Record<string, string>;
 }
 
 interface TagModeConfig {
@@ -31,10 +42,6 @@ interface UserConfig {
   corpus: string[];
   tagModes: TagModeConfig[];
   selectedTagMode?: string;
-  aiDetection: {
-    enabled: boolean;
-    showConfidence: boolean;
-  };
 }
 
 const defaultTones: ToneConfig[] = [
@@ -79,19 +86,60 @@ const defaultTagModes: TagModeConfig[] = [
   },
 ];
 
+const defaultProviders: ProviderConfig[] = [
+  {
+    id: 'deepseek',
+    name: 'DeepSeek',
+    apiUrl: 'https://api.deepseek.com/v1/chat/completions',
+    defaultModels: [
+      { id: 'deepseek-chat', name: 'DeepSeek Chat', isDefault: true },
+      { id: 'deepseek-reasoner', name: 'DeepSeek Reasoner', isDefault: true },
+    ],
+    customModels: [],
+  },
+  {
+    id: 'siliconflow',
+    name: '硅基流动',
+    apiUrl: 'https://api.siliconflow.cn/v1/chat/completions',
+    defaultModels: [
+      { id: 'deepseek-ai/DeepSeek-V3', name: 'DeepSeek V3', isDefault: true },
+      { id: 'Qwen/Qwen2.5-7B-Instruct', name: 'Qwen 2.5 7B', isDefault: true },
+    ],
+    customModels: [],
+  },
+  {
+    id: 'openrouter',
+    name: 'OpenRouter',
+    apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
+    defaultModels: [
+      { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', isDefault: true },
+      { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', isDefault: true },
+    ],
+    customModels: [],
+  },
+  {
+    id: 'aliyun',
+    name: '阿里云百炼',
+    apiUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+    defaultModels: [
+      { id: 'qwen-plus', name: 'Qwen Plus', isDefault: true },
+      { id: 'qwen-turbo', name: 'Qwen Turbo', isDefault: true },
+    ],
+    customModels: [],
+  },
+];
+
 const defaultConfig: UserConfig = {
   aiModel: {
-    selectedModel: 'deepseek',
+    providers: defaultProviders,
+    selectedProvider: 'deepseek',
+    selectedModel: 'deepseek-chat',
     apiKeys: {},
   },
   tones: defaultTones,
   replyCount: 3,
   corpus: [],
   tagModes: defaultTagModes,
-  aiDetection: {
-    enabled: true,
-    showConfidence: true,
-  },
 };
 
 const configStorage = createStorage<UserConfig>('x-ai-reply-config', defaultConfig, {
@@ -99,19 +147,67 @@ const configStorage = createStorage<UserConfig>('x-ai-reply-config', defaultConf
   liveUpdate: true,
 });
 
-// 配置迁移逻辑，为现有用户添加缺失的字段
+// 旧版本类型定义
+interface OldAiModelConfig {
+  selectedModel?: string;
+  apiKeys?: Record<string, string>;
+}
+
+interface OldProviderConfig {
+  id: string;
+  name: string;
+  apiUrl: string;
+  models: ModelInfo[];
+  isCustom?: boolean;
+}
+
+// 配置迁移逻辑
 const migrateConfig = async () => {
   const currentConfig = await configStorage.get();
   let needsUpdate = false;
   const updatedConfig = { ...currentConfig };
 
-  // 检查是否缺少aiDetection字段
-  if (!currentConfig.aiDetection) {
-    updatedConfig.aiDetection = {
-      enabled: true,
-      showConfidence: true,
+  // 迁移旧的 aiModel 结构
+  if (currentConfig.aiModel && !('providers' in currentConfig.aiModel)) {
+    const oldConfig = currentConfig.aiModel as unknown as OldAiModelConfig;
+    updatedConfig.aiModel = {
+      providers: defaultProviders,
+      selectedProvider: oldConfig.selectedModel || 'deepseek',
+      selectedModel:
+        oldConfig.selectedModel === 'deepseek'
+          ? 'deepseek-chat'
+          : oldConfig.selectedModel === 'siliconflow'
+            ? 'deepseek-ai/DeepSeek-V3'
+            : oldConfig.selectedModel === 'openrouter'
+              ? 'openai/gpt-4o-mini'
+              : 'qwen-plus',
+      apiKeys: oldConfig.apiKeys || {},
     };
     needsUpdate = true;
+  }
+
+  // 迁移旧的 models 结构到 defaultModels + customModels
+  if (currentConfig.aiModel?.providers && Array.isArray(currentConfig.aiModel.providers)) {
+    const providers = currentConfig.aiModel.providers;
+    const hasOldStructure = providers.some(p => p && typeof p === 'object' && 'models' in p && !('defaultModels' in p));
+
+    if (hasOldStructure) {
+      updatedConfig.aiModel.providers = providers.map(provider => {
+        if (provider && typeof provider === 'object' && 'models' in provider && !('defaultModels' in provider)) {
+          const oldProvider = provider as unknown as OldProviderConfig;
+          return {
+            id: oldProvider.id,
+            name: oldProvider.name,
+            apiUrl: oldProvider.apiUrl,
+            defaultModels: oldProvider.models,
+            customModels: [],
+            isCustom: oldProvider.isCustom,
+          };
+        }
+        return provider;
+      });
+      needsUpdate = true;
+    }
   }
 
   if (needsUpdate) {
@@ -119,8 +215,7 @@ const migrateConfig = async () => {
   }
 };
 
-// 在模块加载时执行迁移
 migrateConfig().catch(console.error);
 
-export type { ToneConfig, AIModelConfig, UserConfig, TagModeConfig, ModelProvider };
+export type { ToneConfig, AIModelConfig, UserConfig, TagModeConfig, ModelInfo, ProviderConfig };
 export { configStorage };

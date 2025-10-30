@@ -48,9 +48,6 @@
   "selectTone": {
     "message": "Select tone"
   },
-  "selectModel": {
-    "message": "Select AI model"
-  },
   "professional": {
     "message": "Professional"
   },
@@ -152,5 +149,158 @@
   },
   "apiKeyConfigured": {
     "message": "{provider} API Key configured"
+  },
+  "toneManagement": {
+    "message": "Reply Tone Management"
+  },
+  "addTone": {
+    "message": "+ Add Tone"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "toneName": {
+    "message": "Tone Name"
+  },
+  "toneNamePlaceholder": {
+    "message": "e.g., Professional, Friendly"
+  },
+  "prompt": {
+    "message": "Prompt"
+  },
+  "promptPlaceholder": {
+    "message": "Describe the characteristics of this tone, e.g., Reply in a professional and formal tone"
+  },
+  "delete": {
+    "message": "Delete"
+  },
+  "tagModeManagement": {
+    "message": "Tag Mode Management"
+  },
+  "addMode": {
+    "message": "Add Mode"
+  },
+  "defaultTag": {
+    "message": "Default"
+  },
+  "setAsDefault": {
+    "message": "Set as Default"
+  },
+  "edit": {
+    "message": "Edit"
+  },
+  "editTagMode": {
+    "message": "Edit Tag Mode"
+  },
+  "addTagMode": {
+    "message": "Add Tag Mode"
+  },
+  "modeName": {
+    "message": "Mode Name"
+  },
+  "modeNamePlaceholder": {
+    "message": "e.g., River Mode"
+  },
+  "tagContent": {
+    "message": "Tag Content"
+  },
+  "tagContentPlaceholder": {
+    "message": "e.g., @RiverdotInc @River4fun #RiverPts #River4fun"
+  },
+  "setAsDefaultMode": {
+    "message": "Set as default mode"
+  },
+  "personalCorpus": {
+    "message": "Personal Corpus"
+  },
+  "corpusDescription": {
+    "message": "Add your daily expressions to make AI generate replies that match your style"
+  },
+  "addSingleCorpus": {
+    "message": "Add Single Corpus"
+  },
+  "corpusPlaceholder": {
+    "message": "Enter your common expressions..."
+  },
+  "add": {
+    "message": "Add"
+  },
+  "batchUpload": {
+    "message": "Batch Upload (.txt file, one per line)"
+  },
+  "addedCorpus": {
+    "message": "Added Corpus"
+  },
+  "noCorpus": {
+    "message": "No corpus yet"
+  },
+  "generalSettings": {
+    "message": "General Settings"
+  },
+  "replyCount": {
+    "message": "Reply Count"
+  },
+  "replyCountUnit": {
+    "message": "replies"
+  },
+  "replyCountDescription": {
+    "message": "Number of replies generated each time you click the AI button"
+  },
+  "selectProvider": {
+    "message": "Select Provider"
+  },
+  "customProvider": {
+    "message": "Custom"
+  },
+  "selectModel": {
+    "message": "Select Model"
+  },
+  "addModel": {
+    "message": "+ Add Model"
+  },
+  "modelIdRequired": {
+    "message": "Model ID (Required)"
+  },
+  "modelNameOptional": {
+    "message": "Model Name (Optional)"
+  },
+  "defaultModels": {
+    "message": "Default Models"
+  },
+  "customModels": {
+    "message": "Custom Models"
+  },
+  "customModelList": {
+    "message": "Custom Model List"
+  },
+  "apiAddressLabel": {
+    "message": "API Address"
+  },
+  "alreadyConfiguredHint": {
+    "message": "Already configured (enter new value to override)"
+  },
+  "enterApiKeyPlaceholder": {
+    "message": "Enter {provider} API Key"
+  },
+  "deleteProvider": {
+    "message": "Delete this provider"
+  },
+  "addCustomProvider": {
+    "message": "+ Add Custom Provider"
+  },
+  "addCustomProviderTitle": {
+    "message": "Add Custom Provider"
+  },
+  "providerName": {
+    "message": "Provider Name"
+  },
+  "apiUrl": {
+    "message": "API URL"
+  },
+  "modelId": {
+    "message": "Model ID"
+  },
+  "modelName": {
+    "message": "Model Name (Optional)"
   }
 }

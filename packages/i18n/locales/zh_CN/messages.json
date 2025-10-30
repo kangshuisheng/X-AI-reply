@@ -48,9 +48,6 @@
   "selectTone": {
     "message": "选择语气"
   },
-  "selectModel": {
-    "message": "选择AI模型"
-  },
   "professional": {
     "message": "专业"
   },
@@ -152,5 +149,158 @@
   },
   "apiKeyConfigured": {
     "message": "{provider} API Key 已配置"
+  },
+  "toneManagement": {
+    "message": "回复语气管理"
+  },
+  "addTone": {
+    "message": "+ 添加语气"
+  },
+  "cancel": {
+    "message": "取消"
+  },
+  "toneName": {
+    "message": "语气名称"
+  },
+  "toneNamePlaceholder": {
+    "message": "例如：专业、友好"
+  },
+  "prompt": {
+    "message": "提示词"
+  },
+  "promptPlaceholder": {
+    "message": "描述这种语气的特点，例如：以专业、正式的语气回复"
+  },
+  "delete": {
+    "message": "删除"
+  },
+  "tagModeManagement": {
+    "message": "标签模式管理"
+  },
+  "addMode": {
+    "message": "添加模式"
+  },
+  "defaultTag": {
+    "message": "默认"
+  },
+  "setAsDefault": {
+    "message": "设为默认"
+  },
+  "edit": {
+    "message": "编辑"
+  },
+  "editTagMode": {
+    "message": "编辑标签模式"
+  },
+  "addTagMode": {
+    "message": "添加标签模式"
+  },
+  "modeName": {
+    "message": "模式名称"
+  },
+  "modeNamePlaceholder": {
+    "message": "例如：River 嘴撸"
+  },
+  "tagContent": {
+    "message": "标签内容"
+  },
+  "tagContentPlaceholder": {
+    "message": "例如：@RiverdotInc @River4fun #RiverPts #River4fun"
+  },
+  "setAsDefaultMode": {
+    "message": "设为默认模式"
+  },
+  "personalCorpus": {
+    "message": "个人语料库"
+  },
+  "corpusDescription": {
+    "message": "添加你的日常表达方式，让 AI 生成更符合你风格的回复"
+  },
+  "addSingleCorpus": {
+    "message": "添加单条语料"
+  },
+  "corpusPlaceholder": {
+    "message": "输入你的常用表达..."
+  },
+  "add": {
+    "message": "添加"
+  },
+  "batchUpload": {
+    "message": "批量上传（.txt 文件，每行一条）"
+  },
+  "addedCorpus": {
+    "message": "已添加的语料"
+  },
+  "noCorpus": {
+    "message": "暂无语料"
+  },
+  "generalSettings": {
+    "message": "通用设置"
+  },
+  "replyCount": {
+    "message": "生成回复数量"
+  },
+  "replyCountUnit": {
+    "message": "条"
+  },
+  "replyCountDescription": {
+    "message": "每次点击 AI 按钮生成的回复数量"
+  },
+  "selectProvider": {
+    "message": "选择供应商"
+  },
+  "customProvider": {
+    "message": "自定义"
+  },
+  "selectModel": {
+    "message": "选择模型"
+  },
+  "addModel": {
+    "message": "+ 添加模型"
+  },
+  "modelIdRequired": {
+    "message": "模型 ID (必填)"
+  },
+  "modelNameOptional": {
+    "message": "模型名称 (可选)"
+  },
+  "defaultModels": {
+    "message": "预设模型"
+  },
+  "customModels": {
+    "message": "自定义模型"
+  },
+  "customModelList": {
+    "message": "自定义模型列表"
+  },
+  "apiAddressLabel": {
+    "message": "API 地址"
+  },
+  "alreadyConfiguredHint": {
+    "message": "已配置 (输入新值覆盖)"
+  },
+  "enterApiKeyPlaceholder": {
+    "message": "输入 {provider} API Key"
+  },
+  "deleteProvider": {
+    "message": "删除此供应商"
+  },
+  "addCustomProvider": {
+    "message": "+ 添加自定义供应商"
+  },
+  "addCustomProviderTitle": {
+    "message": "添加自定义供应商"
+  },
+  "providerName": {
+    "message": "供应商名称"
+  },
+  "apiUrl": {
+    "message": "API URL"
+  },
+  "modelId": {
+    "message": "模型 ID"
+  },
+  "modelName": {
+    "message": "模型名称 (可选)"
   }
 }

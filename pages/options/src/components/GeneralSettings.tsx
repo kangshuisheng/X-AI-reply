@@ -1,3 +1,4 @@
+import { t } from '@extension/i18n';
 import { useStorage } from '@extension/shared';
 import { configStorage, exampleThemeStorage } from '@extension/storage';
 import { cn } from '@extension/ui';
@@ -15,13 +16,15 @@ export const GeneralSettings = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className={cn('text-xl font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>通用设置</h2>
+      <h2 className={cn('text-xl font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>
+        {t('generalSettings')}
+      </h2>
 
       <div>
         <label
           htmlFor="reply-count-select"
           className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
-          生成回复数量
+          {t('replyCount')}
         </label>
         <select
           id="reply-count-select"
@@ -35,12 +38,12 @@ export const GeneralSettings = () => {
           )}>
           {[1, 2, 3, 4, 5].map(num => (
             <option key={num} value={num}>
-              {num} 条
+              {num} {t('replyCountUnit')}
             </option>
           ))}
         </select>
         <p className={cn('m-0 mt-1 text-sm', isLight ? 'text-slate-500' : 'text-slate-400')}>
-          每次点击 AI 按钮生成的回复数量
+          {t('replyCountDescription')}
         </p>
       </div>
     </div>

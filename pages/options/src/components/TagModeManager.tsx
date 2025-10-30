@@ -1,3 +1,4 @@
+import { t } from '@extension/i18n';
 import { useStorage } from '@extension/shared';
 import { configStorage, exampleThemeStorage } from '@extension/storage';
 import { cn } from '@extension/ui';
@@ -67,11 +68,13 @@ const TagModeManager = () => {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h2 className={cn('m-0 text-xl font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>标签模式管理</h2>
+        <h2 className={cn('m-0 text-xl font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>
+          {t('tagModeManagement')}
+        </h2>
         <button
           onClick={() => setShowForm(true)}
           className="rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 px-4 py-2 font-medium text-white transition-all hover:-translate-y-0.5">
-          添加模式
+          {t('addMode')}
         </button>
       </div>
 
@@ -103,7 +106,7 @@ const TagModeManager = () => {
                   </h3>
                   {mode.isDefault && (
                     <span className="rounded bg-amber-400 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900">
-                      默认
+                      {t('defaultTag')}
                     </span>
                   )}
                 </div>
@@ -125,7 +128,7 @@ const TagModeManager = () => {
                         ? 'border-amber-400/30 bg-amber-400/10 text-amber-600 hover:bg-amber-400/15'
                         : 'border-amber-400/30 bg-amber-400/20 text-amber-600 hover:bg-amber-400/25',
                     )}>
-                    设为默认
+                    {t('setAsDefault')}
                   </button>
                 )}
                 <button
@@ -139,7 +142,7 @@ const TagModeManager = () => {
                       ? 'border-gray-500/30 bg-gray-500/10 text-gray-700 hover:bg-gray-500/15'
                       : 'border-gray-500/50 bg-gray-500/20 text-gray-200 hover:bg-gray-500/25',
                   )}>
-                  编辑
+                  {t('edit')}
                 </button>
                 <button
                   onClick={() => deleteTagMode(mode.id)}
@@ -149,7 +152,7 @@ const TagModeManager = () => {
                       ? 'border-red-500/30 bg-red-500/10 text-red-600 hover:bg-red-500/15'
                       : 'border-red-500/30 bg-red-500/20 text-red-600 hover:bg-red-500/25',
                   )}>
-                  删除
+                  {t('delete')}
                 </button>
               </div>
             </div>
@@ -194,21 +197,21 @@ const TagModeForm = ({
         isLight ? 'border-slate-200/50 bg-gray-100/80' : 'border-slate-600/50 bg-gray-700/80',
       )}>
       <h3 className={cn('m-0 mb-4 font-semibold', isLight ? 'text-slate-900' : 'text-slate-100')}>
-        {mode ? '编辑标签模式' : '添加标签模式'}
+        {mode ? t('editTagMode') : t('addTagMode')}
       </h3>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
           <label
             htmlFor="name"
             className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
-            模式名称
+            {t('modeName')}
           </label>
           <input
             type="text"
             id="name"
             value={name}
             onChange={e => setName(e.target.value)}
-            placeholder="例如：River 嘴撸"
+            placeholder={t('modeNamePlaceholder')}
             required
             className={cn(
               'w-full rounded-lg border px-4 py-3 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10',
@@ -222,13 +225,13 @@ const TagModeForm = ({
           <label
             htmlFor="tags"
             className={cn('mb-2 block text-sm font-medium', isLight ? 'text-gray-700' : 'text-gray-200')}>
-            标签内容
+            {t('tagContent')}
           </label>
           <textarea
             id="tags"
             value={tags}
             onChange={e => setTags(e.target.value)}
-            placeholder="例如：@RiverdotInc @River4fun #RiverPts #River4fun"
+            placeholder={t('tagContentPlaceholder')}
             required
             className={cn(
               'min-h-[80px] w-full resize-y rounded-lg border px-4 py-3 text-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10',
@@ -247,14 +250,14 @@ const TagModeForm = ({
             className="h-4 w-4 accent-blue-500"
           />
           <label htmlFor="isDefault" className={cn('ml-2 text-sm', isLight ? 'text-slate-900' : 'text-slate-100')}>
-            设为默认模式
+            {t('setAsDefaultMode')}
           </label>
         </div>
         <div className="flex gap-3">
           <button
             type="submit"
             className="rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 px-4 py-2 font-medium text-white transition-all hover:-translate-y-0.5">
-            保存
+            {t('save')}
           </button>
           <button
             type="button"
@@ -263,7 +266,7 @@ const TagModeForm = ({
               'rounded-lg px-4 py-2 font-medium transition-all hover:-translate-y-0.5',
               isLight ? 'bg-gray-200 text-gray-700' : 'bg-gray-600 text-gray-200',
             )}>
-            取消
+            {t('cancel')}
           </button>
         </div>
       </form>
