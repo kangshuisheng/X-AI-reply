@@ -167,23 +167,89 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
               ○ 无标签
             </button>
             {tagModes.map(mode => (
-              <button
-                key={mode.id}
-                onClick={() => handleTagModeSelect(mode.id)}
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  border: `1px solid ${selectedTagMode === mode.id ? '#3b82f6' : colors.cardBorder}`,
-                  background: selectedTagMode === mode.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                  color: colors.text,
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s',
-                }}>
-                <div style={{ fontWeight: '500' }}>● {mode.name}</div>
-                <div style={{ fontSize: '10px', color: colors.textSecondary, marginTop: '2px' }}>{mode.tags}</div>
-              </button>
+              <div key={mode.id} style={{ display: 'flex', gap: '4px', alignItems: 'stretch' }}>
+                <button
+                  onClick={() => handleTagModeSelect(mode.id)}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: `1px solid ${selectedTagMode === mode.id ? '#3b82f6' : colors.cardBorder}`,
+                    background: selectedTagMode === mode.id ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                    color: colors.text,
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                  }}>
+                  <div style={{ fontWeight: '500' }}>● {mode.name}</div>
+                  <div style={{ fontSize: '10px', color: colors.textSecondary, marginTop: '2px' }}>{mode.tags}</div>
+                </button>
+                <button
+                  onClick={() => {
+                    const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]') as HTMLElement;
+                    if (replyBox) {
+                      replyBox.focus();
+
+                      // Twitter的输入框通常是contentEditable的div
+                      if (replyBox.contentEditable === 'true' || replyBox.getAttribute('contenteditable') === 'true') {
+                        const selection = window.getSelection();
+                        if (selection && selection.rangeCount > 0) {
+                          const range = selection.getRangeAt(0);
+                          range.deleteContents();
+                          const textToInsert = (replyBox.textContent ? '\n' : '') + mode.tags;
+                          const textNode = document.createTextNode(textToInsert);
+                          range.insertNode(textNode);
+                          range.setStartAfter(textNode);
+                          range.collapse(true);
+                          selection.removeAllRanges();
+                          selection.addRange(range);
+                        } else {
+                          // 如果没有选区，在末尾追加
+                          const currentText = replyBox.textContent || '';
+                          const textToInsert = (currentText ? '\n' : '') + mode.tags;
+                          replyBox.textContent = currentText + textToInsert;
+                        }
+
+                        // 触发输入事件
+                        replyBox.dispatchEvent(new Event('input', { bubbles: true }));
+                        replyBox.dispatchEvent(new Event('change', { bubbles: true }));
+                      } else if (replyBox.tagName === 'TEXTAREA' || replyBox.tagName === 'INPUT') {
+                        // 备用方案：如果是标准输入框
+                        const textarea = replyBox as HTMLTextAreaElement | HTMLInputElement;
+                        const currentValue = textarea.value;
+                        const cursorPos = textarea.selectionStart || currentValue.length;
+                        const textToInsert = (currentValue ? '\n' : '') + mode.tags;
+                        textarea.value =
+                          currentValue.slice(0, cursorPos) + textToInsert + currentValue.slice(cursorPos);
+                        textarea.selectionStart = textarea.selectionEnd = cursorPos + textToInsert.length;
+                        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                      } else {
+                        // 最后的兜底方案：直接追加文本
+                        const currentText = replyBox.textContent || replyBox.innerText || '';
+                        const textToInsert = (currentText ? '\n' : '') + mode.tags;
+                        replyBox.textContent = currentText + textToInsert;
+                        replyBox.dispatchEvent(new Event('input', { bubbles: true }));
+                        replyBox.dispatchEvent(new Event('change', { bubbles: true }));
+                      }
+                    }
+                  }}
+                  title="插入标签"
+                  style={{
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: `1px solid ${colors.cardBorder}`,
+                    background: colors.cardBg,
+                    color: colors.text,
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = colors.cardHover)}
+                  onMouseLeave={e => (e.currentTarget.style.background = colors.cardBg)}>
+                  ➕
+                </button>
+              </div>
             ))}
           </div>
         </div>
@@ -235,6 +301,19 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
           borderTop: `1px solid ${colors.cardBorder}`,
           paddingTop: '12px',
         }}>
+        <div
+          style={{
+            padding: '8px 12px',
+            background: colors.cardBg,
+            borderRadius: '6px',
+            marginBottom: '8px',
+          }}>
+          <div style={{ fontSize: '11px', fontWeight: '600', color: colors.text, marginBottom: '4px' }}>当前模型</div>
+          <div style={{ fontSize: '12px', color: colors.textSecondary }}>
+            {currentProvider?.name} - {currentModel?.name}
+          </div>
+        </div>
+
         {!showModelSelector ? (
           <button
             onClick={() => setShowModelSelector(true)}
@@ -242,22 +321,25 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
               width: '100%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              justifyContent: 'center',
               padding: '8px 12px',
               borderRadius: '6px',
-              border: 'none',
+              border: `1px solid ${colors.cardBorder}`,
               background: 'transparent',
               color: colors.textSecondary,
               fontSize: '11px',
               cursor: 'pointer',
-              transition: 'background 0.2s',
+              transition: 'all 0.2s',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = colors.cardBg)}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <span>
-              💡 {currentProvider?.name} - {currentModel?.name}
-            </span>
-            <span>⚙️</span>
+            onMouseEnter={e => {
+              e.currentTarget.style.background = colors.cardBg;
+              e.currentTarget.style.borderColor = '#3b82f6';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = colors.cardBorder;
+            }}>
+            🔄 切换模型
           </button>
         ) : (
           <div
@@ -268,7 +350,7 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
             }}>
             <div
               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <div style={{ fontSize: '11px', fontWeight: '600', color: colors.text }}>切换模型</div>
+              <div style={{ fontSize: '11px', fontWeight: '600', color: colors.text }}>选择模型</div>
               <button
                 onClick={() => setShowModelSelector(false)}
                 style={{
