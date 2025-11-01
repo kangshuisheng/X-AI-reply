@@ -33,42 +33,17 @@ export const useReplyGeneration = () => {
     if (replyBox) {
       replyBox.focus();
 
-      // Twitter的输入框通常是contentEditable的div
-      if (replyBox.contentEditable === 'true' || replyBox.getAttribute('contenteditable') === 'true') {
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          range.deleteContents();
-          const textNode = document.createTextNode(reply);
-          range.insertNode(textNode);
-          range.setStartAfter(textNode);
-          range.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(range);
-        } else {
-          // 如果没有选区，在末尾追加
-          const currentText = replyBox.textContent || '';
-          replyBox.textContent = currentText + reply;
-        }
+      // 使用粘贴事件的形式插入文本，更自然更符合用户输入行为
+      const dataTransfer = new DataTransfer();
+      dataTransfer.setData('text/plain', reply);
 
-        // 触发输入事件
-        replyBox.dispatchEvent(new Event('input', { bubbles: true }));
-        replyBox.dispatchEvent(new Event('change', { bubbles: true }));
-      } else if (replyBox.tagName === 'TEXTAREA' || replyBox.tagName === 'INPUT') {
-        // 备用方案：如果是标准输入框
-        const textarea = replyBox as HTMLTextAreaElement | HTMLInputElement;
-        const currentValue = textarea.value;
-        const cursorPos = textarea.selectionStart || currentValue.length;
-        textarea.value = currentValue.slice(0, cursorPos) + reply + currentValue.slice(cursorPos);
-        textarea.selectionStart = textarea.selectionEnd = cursorPos + reply.length;
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      } else {
-        // 最后的兜底方案：直接追加文本
-        const currentText = replyBox.textContent || replyBox.innerText || '';
-        replyBox.textContent = currentText + reply;
-        replyBox.dispatchEvent(new Event('input', { bubbles: true }));
-        replyBox.dispatchEvent(new Event('change', { bubbles: true }));
-      }
+      const pasteEvent = new ClipboardEvent('paste', {
+        bubbles: true,
+        cancelable: true,
+        clipboardData: dataTransfer,
+      });
+
+      replyBox.dispatchEvent(pasteEvent);
 
       showSuccessMessage('回复已填充成功！');
     }
