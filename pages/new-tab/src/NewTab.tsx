@@ -11,7 +11,6 @@ const NewTab = () => {
 
   const goGithubSite = () => chrome.tabs.create(PROJECT_URL_OBJECT);
 
-  console.log(t('hello', 'World'));
   return (
     <div className={cn('App', isLight ? 'bg-slate-50' : 'bg-gray-800')}>
       <header className={cn('App-header', isLight ? 'text-gray-900' : 'text-gray-100')}>

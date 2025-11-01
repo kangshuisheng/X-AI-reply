@@ -6,15 +6,12 @@ export const useReplyGeneration = () => {
   const [loading, setLoading] = useState(false);
 
   const generateReplies = async (tweetContent: string, toneId: string) => {
-    console.log('开始生成回复请求:', { tweetContent: tweetContent.substring(0, 100) + '...', toneId });
     setLoading(true);
     try {
       const response = await chrome.runtime.sendMessage({
         type: 'GENERATE_REPLY',
         payload: { tweetContent, toneId },
       });
-
-      console.log('收到回复生成响应:', response);
 
       if (response.success) {
         setReplies(response.replies);
@@ -27,7 +24,6 @@ export const useReplyGeneration = () => {
       showErrorMessage('网络连接失败，请检查网络连接');
       setReplies([]);
     } finally {
-      console.log('生成回复完成，设置loading为false');
       setLoading(false);
     }
   };

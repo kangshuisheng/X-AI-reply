@@ -186,53 +186,43 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
                   <div style={{ fontSize: '10px', color: colors.textSecondary, marginTop: '2px' }}>{mode.tags}</div>
                 </button>
                 <button
+                  key={`insert-${mode.id}`}
                   onClick={() => {
-                    const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]') as HTMLElement;
-                    if (replyBox) {
-                      replyBox.focus();
+                    const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]') as HTMLElement | null;
+                    if (!replyBox) return;
 
-                      // Twitter的输入框通常是contentEditable的div
-                      if (replyBox.contentEditable === 'true' || replyBox.getAttribute('contenteditable') === 'true') {
-                        const selection = window.getSelection();
-                        if (selection && selection.rangeCount > 0) {
-                          const range = selection.getRangeAt(0);
-                          range.deleteContents();
-                          const textToInsert = (replyBox.textContent ? '\n' : '') + mode.tags;
-                          const textNode = document.createTextNode(textToInsert);
-                          range.insertNode(textNode);
-                          range.setStartAfter(textNode);
-                          range.collapse(true);
-                          selection.removeAllRanges();
-                          selection.addRange(range);
-                        } else {
-                          // 如果没有选区，在末尾追加
-                          const currentText = replyBox.textContent || '';
-                          const textToInsert = (currentText ? '\n' : '') + mode.tags;
-                          replyBox.textContent = currentText + textToInsert;
-                        }
+                    replyBox.focus();
 
-                        // 触发输入事件
-                        replyBox.dispatchEvent(new Event('input', { bubbles: true }));
-                        replyBox.dispatchEvent(new Event('change', { bubbles: true }));
-                      } else if (replyBox.tagName === 'TEXTAREA' || replyBox.tagName === 'INPUT') {
-                        // 备用方案：如果是标准输入框
-                        const textarea = replyBox as HTMLTextAreaElement | HTMLInputElement;
-                        const currentValue = textarea.value;
-                        const cursorPos = textarea.selectionStart || currentValue.length;
-                        const textToInsert = (currentValue ? '\n' : '') + mode.tags;
-                        textarea.value =
-                          currentValue.slice(0, cursorPos) + textToInsert + currentValue.slice(cursorPos);
-                        textarea.selectionStart = textarea.selectionEnd = cursorPos + textToInsert.length;
-                        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                      } else {
-                        // 最后的兜底方案：直接追加文本
-                        const currentText = replyBox.textContent || replyBox.innerText || '';
-                        const textToInsert = (currentText ? '\n' : '') + mode.tags;
-                        replyBox.textContent = currentText + textToInsert;
-                        replyBox.dispatchEvent(new Event('input', { bubbles: true }));
-                        replyBox.dispatchEvent(new Event('change', { bubbles: true }));
-                      }
+                    const rawTags = mode.tags;
+                    const currentText = replyBox.innerText || '';
+
+                    const tagArray = rawTags.trim().split(/\s+/);
+                    const tagsToInsert = tagArray.filter(tag => !currentText.includes(tag.trim()));
+
+                    if (tagsToInsert.length === 0) {
+                      return;
                     }
+
+                    // --- 核心修改在这里 ---
+                    // 准备好要插入的标签字符串
+                    const tagsString = tagsToInsert.join(' ');
+
+                    // 判断如何构造最终要插入的文本
+                    // 1. 如果输入框本来就是空的（或只有空格），就直接插入标签
+                    // 2. 如果输入框已经有内容，就在标签前加上一个换行符 '\n'
+                    const textToInsert = currentText.trim().length > 0 ? '\n' + tagsString : tagsString;
+                    // --- 修改结束 ---
+
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.setData('text/plain', textToInsert);
+
+                    const pasteEvent = new ClipboardEvent('paste', {
+                      bubbles: true,
+                      cancelable: true,
+                      clipboardData: dataTransfer,
+                    });
+
+                    replyBox.dispatchEvent(pasteEvent);
                   }}
                   title="插入标签"
                   style={{
