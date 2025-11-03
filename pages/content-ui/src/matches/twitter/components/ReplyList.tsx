@@ -1,4 +1,5 @@
-import { getSystemTheme, getThemeColors } from '../utils/theme';
+import { themeManager } from '../utils/optimizedTheme';
+import { useMemo } from 'react';
 
 interface ReplyListProps {
   position: { top: number; left: number; width: number };
@@ -11,8 +12,10 @@ interface ReplyListProps {
 }
 
 export const ReplyList = ({ position, replies, loading, onSelect, onClose, onBack, onRegenerate }: ReplyListProps) => {
-  const theme = getSystemTheme();
-  const colors = getThemeColors(theme);
+  // 使用优化的主题管理和缓存
+  const theme = useMemo(() => themeManager.getSystemTheme(), []);
+  const colors = useMemo(() => themeManager.getThemeColors(theme), [theme]);
+
   return (
     <div
       role="dialog"

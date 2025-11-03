@@ -1,7 +1,8 @@
-import { getSystemTheme, getThemeColors } from '../utils/theme';
+import { domCache } from '../utils/domCache';
+import { themeManager } from '../utils/optimizedTheme';
 import { t } from '@extension/i18n';
 import { configStorage } from '@extension/storage';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { ToneConfig, TagModeConfig, ProviderConfig } from '@extension/storage';
 
 interface ToneSelectorProps {
@@ -27,8 +28,10 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showTagSelector, setShowTagSelector] = useState(false);
-  const theme = getSystemTheme();
-  const colors = getThemeColors(theme);
+
+  // 使用优化的主题管理和缓存
+  const theme = useMemo(() => themeManager.getSystemTheme(), []);
+  const colors = useMemo(() => themeManager.getThemeColors(theme), [theme]);
 
   useEffect(() => {
     configStorage.get().then(config => {
@@ -188,7 +191,7 @@ export const ToneSelector = ({ position, onSelect, onClose }: ToneSelectorProps)
                 <button
                   key={`insert-${mode.id}`}
                   onClick={() => {
-                    const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]') as HTMLElement | null;
+                    const replyBox = domCache.getReplyBox();
                     if (!replyBox) return;
 
                     replyBox.focus();

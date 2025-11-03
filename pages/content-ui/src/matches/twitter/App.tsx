@@ -2,9 +2,12 @@ import { showConfigPrompt } from './components/ConfigPrompt';
 import { ReplyList } from './components/ReplyList';
 import { ToneSelector } from './components/ToneSelector';
 import { useReplyGeneration } from './hooks/useReplyGeneration';
+import { domCache } from './utils/domCache';
+import { optimizedObserver } from './utils/optimizedObserver';
+import { performanceMonitor } from './utils/performanceMonitor';
 import { getTweetContent } from './utils/tweetContent';
 import { t } from '@extension/i18n';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 const isExtensionValid = () => {
@@ -23,8 +26,21 @@ export default function App() {
 
   const { replies, loading, generateReplies, insertReply, setReplies } = useReplyGeneration();
 
-  const getInputBoxPosition = () => {
-    const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
+  // 在开发环境中暴露性能监控工具到全局
+  useEffect(() => {
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      (window as unknown as Record<string, unknown>).__performanceMonitor = performanceMonitor;
+      (window as unknown as Record<string, unknown>).__domCache = domCache;
+      (window as unknown as Record<string, unknown>).__optimizedObserver = optimizedObserver;
+
+      console.log('🚀 性能监控工具已启用');
+      console.log('使用 window.__performanceMonitor.setEnabled(true) 开启监控');
+      console.log('使用 window.__performanceMonitor.generateReport() 查看报告');
+    }
+  }, []);
+
+  const getInputBoxPosition = useCallback(() => {
+    const replyBox = domCache.getReplyBox();
     if (replyBox) {
       const rect = replyBox.getBoundingClientRect();
       return {
@@ -34,13 +50,13 @@ export default function App() {
       };
     }
     return { top: 0, left: 0, width: 0 };
-  };
+  }, []);
 
-  const addAIButton = (replyBox: Element) => {
+  const addAIButton = useCallback((replyBox: Element) => {
     if (!isExtensionValid()) return;
 
     const container = replyBox.closest('[data-testid="tweetTextarea_0RichTextInputContainer"]');
-    if (container && !container.querySelector('.ai-reply-button')) {
+    if (container && !domCache.getAIButton()) {
       const button = document.createElement('button');
       button.className = 'ai-reply-button';
       button.innerHTML = `
@@ -69,109 +85,149 @@ export default function App() {
         transition: all 0.2s ease;
       `;
 
-      button.addEventListener('mouseenter', () => {
-        button.style.transform = 'scale(1.1)';
-        button.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.5)';
-      });
-
-      button.addEventListener('mouseleave', () => {
-        button.style.transform = 'scale(1)';
-        button.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.3)';
-      });
-
-      button.addEventListener('click', e => {
+      // 优化的事件处理器
+      const handleButtonEvents = (e: Event) => {
         e.stopPropagation();
-        handleAIButtonClick();
+        const target = e.target as HTMLElement;
+
+        if (e.type === 'mouseenter') {
+          target.style.transform = 'scale(1.1)';
+          target.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.5)';
+        } else if (e.type === 'mouseleave') {
+          target.style.transform = 'scale(1)';
+          target.style.boxShadow = '0 2px 8px rgba(59, 130, 246, 0.3)';
+        } else if (e.type === 'click') {
+          handleAIButtonClick();
+        }
+      };
+
+      // 使用passive监听器提高性能
+      ['mouseenter', 'mouseleave'].forEach(event => {
+        button.addEventListener(event, handleButtonEvents, { passive: true });
       });
+      button.addEventListener('click', handleButtonEvents);
+
+      // 存储清理函数
+      (button as unknown as { _cleanup: () => void })._cleanup = () => {
+        ['mouseenter', 'mouseleave', 'click'].forEach(event => {
+          button.removeEventListener(event, handleButtonEvents);
+        });
+      };
 
       (container as HTMLElement).style.position = 'relative';
       container.appendChild(button);
       setCurrentTweetContent(getTweetContent());
     }
-  };
+  }, []);
 
-  const setupReplyBoxListener = () => {
+  const setupReplyBoxListener = useCallback(() => {
     if (!isExtensionValid()) return () => {};
 
-    const existingReplyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
-    if (existingReplyBox) {
-      addAIButton(existingReplyBox);
-    }
+    // 检查并添加AI按钮的回调
+    const handleDOMChange = () => {
+      if (!isExtensionValid()) return;
 
-    let textareaObserverRunning = false;
-    const textareaObserver = new MutationObserver(() => {
-      if (!isExtensionValid() || textareaObserverRunning) return;
-      textareaObserverRunning = true;
-
-      requestAnimationFrame(() => {
-        const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]');
-        if (replyBox) {
-          setTimeout(() => addAIButton(replyBox), 50);
-        } else if (!showToneSelector && !showReplyList) {
-          document.querySelector('.ai-reply-button')?.remove();
+      const replyBox = domCache.getReplyBox();
+      if (replyBox) {
+        addAIButton(replyBox);
+      } else if (!showToneSelector && !showReplyList) {
+        // 清理AI按钮
+        const aiButton = domCache.getAIButton();
+        if (aiButton) {
+          // 清理事件监听器
+          const buttonWithCleanup = aiButton as unknown as { _cleanup?: () => void };
+          if (buttonWithCleanup._cleanup) {
+            buttonWithCleanup._cleanup();
+          }
+          aiButton.remove();
+          domCache.clearCache('.ai-reply-button');
         }
+      }
+    };
 
-        textareaObserverRunning = false;
-      });
-    });
+    // 初始检查
+    handleDOMChange();
 
-    textareaObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
+    // 注册到优化的观察者
+    const unsubscribe = optimizedObserver.addCallback(handleDOMChange);
 
     return () => {
-      textareaObserver.disconnect();
-      document.querySelector('.ai-reply-button')?.remove();
+      unsubscribe();
+      // 清理AI按钮
+      const aiButton = domCache.getAIButton();
+      if (aiButton) {
+        const buttonWithCleanup = aiButton as unknown as { _cleanup?: () => void };
+        if (buttonWithCleanup._cleanup) {
+          buttonWithCleanup._cleanup();
+        }
+        aiButton.remove();
+      }
     };
-  };
+  }, [addAIButton, showToneSelector, showReplyList]);
 
+  // 使用refs来避免不必要的effect重新执行
+  const cleanupRef = useRef<(() => void) | null>(null);
+  const currentUrlRef = useRef(window.location.href);
+
+  const resetState = useCallback(() => {
+    setShowToneSelector(false);
+    setShowReplyList(false);
+    setReplies([]);
+
+    // 清理AI按钮
+    const aiButton = domCache.getAIButton();
+    if (aiButton) {
+      const buttonWithCleanup = aiButton as unknown as { _cleanup?: () => void };
+      if (buttonWithCleanup._cleanup) {
+        buttonWithCleanup._cleanup();
+      }
+      aiButton.remove();
+      domCache.clearCache('.ai-reply-button');
+    }
+
+    cleanupRef.current?.();
+    cleanupRef.current = null;
+  }, [setReplies]);
+
+  // URL变化检查逻辑分离
   useEffect(() => {
     if (!isExtensionValid()) return;
 
-    let cleanup: (() => void) | null = null;
-    let currentUrl = window.location.href;
-
-    const resetState = () => {
-      setShowToneSelector(false);
-      setShowReplyList(false);
-      setReplies([]);
-      document.querySelector('.ai-reply-button')?.remove();
-      cleanup?.();
-      cleanup = null;
-    };
-
     const checkUrlChange = () => {
-      if (window.location.href !== currentUrl) {
-        currentUrl = window.location.href;
+      if (window.location.href !== currentUrlRef.current) {
+        currentUrlRef.current = window.location.href;
         resetState();
+        // 延迟重新设置监听器，给页面时间加载
         setTimeout(() => {
-          cleanup = setupReplyBoxListener();
+          cleanupRef.current = setupReplyBoxListener();
         }, 500);
-        return true;
       }
-      return false;
     };
 
-    let observerRunning = false;
-    const observer = new MutationObserver(() => {
-      if (!isExtensionValid() || observerRunning) return;
-      observerRunning = true;
-
-      requestAnimationFrame(() => {
-        if (!checkUrlChange() && !showToneSelector && !showReplyList) {
-          cleanup = setupReplyBoxListener();
-        }
-        observerRunning = false;
-      });
-    });
+    // 注册URL变化检查到优化的观察者
+    const unsubscribeUrlCheck = optimizedObserver.addCallback(checkUrlChange);
 
     const handlePopState = () => {
       resetState();
       setTimeout(() => {
-        cleanup = setupReplyBoxListener();
+        cleanupRef.current = setupReplyBoxListener();
       }, 500);
     };
+
+    // 初始设置
+    cleanupRef.current = setupReplyBoxListener();
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      unsubscribeUrlCheck();
+      cleanupRef.current?.();
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [resetState, setupReplyBoxListener]);
+
+  // 点击外部关闭逻辑分离
+  useEffect(() => {
+    if (!showToneSelector && !showReplyList) return;
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Element;
@@ -182,25 +238,15 @@ export default function App() {
       }
     };
 
-    cleanup = setupReplyBoxListener();
-    observer.observe(document.body, { childList: true, subtree: true });
-    window.addEventListener('popstate', handlePopState);
-
-    if (showToneSelector || showReplyList) {
-      setTimeout(() => {
-        document.addEventListener('click', handleClickOutside);
-      }, 100);
-    } else {
-      document.removeEventListener('click', handleClickOutside);
-    }
+    // 延迟添加监听器，避免立即触发
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside, { passive: true });
+    }, 100);
 
     return () => {
-      observer.disconnect();
-      cleanup?.();
-      window.removeEventListener('popstate', handlePopState);
+      clearTimeout(timeoutId);
       document.removeEventListener('click', handleClickOutside);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showToneSelector, showReplyList]);
 
   const handleAIButtonClick = async () => {
@@ -222,7 +268,9 @@ export default function App() {
     setCurrentToneId(toneId);
     setShowToneSelector(false);
     setShowReplyList(true);
-    await generateReplies(currentTweetContent, toneId);
+
+    // 监控AI回复生成性能
+    await performanceMonitor.measureAsync('generateReplies', () => generateReplies(currentTweetContent, toneId));
   };
 
   const handleRegenerate = async () => {

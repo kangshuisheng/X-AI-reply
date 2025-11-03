@@ -1,3 +1,4 @@
+import { domCache } from '../utils/domCache';
 import { showErrorMessage, showSuccessMessage } from '../utils/notifications';
 import { useState } from 'react';
 
@@ -29,7 +30,7 @@ export const useReplyGeneration = () => {
   };
 
   const insertReply = (reply: string) => {
-    const replyBox = document.querySelector('[data-testid="tweetTextarea_0"]') as HTMLElement;
+    const replyBox = domCache.getReplyBox();
     if (replyBox) {
       replyBox.focus();
 
