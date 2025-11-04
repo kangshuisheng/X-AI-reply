@@ -1,6 +1,6 @@
 {
   "name": "chrome-extension-boilerplate-react-vite",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "chrome extension boilerplate",
   "license": "MIT",
   "private": true,
@@ -31,7 +31,7 @@
     "lint:fix": "turbo lint:fix --continue",
     "format": "turbo format --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
     "prepare": "husky",
-    "update-version": "bash bash-scripts/update_version.sh",
+    "update-version": "node bash-scripts/update_version.mjs",
     "copy-env": "run-script-os",
     "copy-env:win32": "if not exist .env copy .example.env .env",
     "copy-env:default": "bash bash-scripts/copy_env.sh",
