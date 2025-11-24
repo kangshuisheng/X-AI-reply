@@ -1,5 +1,5 @@
 {
-  "name": "chrome-extension-boilerplate-react-vite",
+  "name": "kk-x-copilot",
   "version": "0.6.0",
   "description": "chrome extension boilerplate",
   "license": "MIT",
@@ -94,6 +94,6 @@
   },
   "packageManager": "pnpm@10.11.0",
   "engines": {
-    "node": ">=22.15.1"
+    "node": ">=18.0.0"
   }
 }

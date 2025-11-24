@@ -1,11 +1,17 @@
 {
-  "extends": "@extension/tsconfig/base",
+  "extends": "../../packages/tsconfig/base.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@src/*": ["src/*"]
+      "@src/*": ["src/*"],
+      "@extension/shared": ["../../packages/shared/index.mts"],
+      "@extension/storage": ["../../packages/storage/index.mts"],
+      "@extension/i18n": ["../../packages/i18n/index.mts"],
+      "@extension/ui": ["../../packages/ui/index.mts"],
+      "@extension/env": ["../../packages/env/index.mts"]
     },
-    "types": ["chrome", "node", "./tailwind.d.ts"]
+    "types": ["chrome", "node", "./tailwind.d.ts"],
+    "jsx": "react-jsx"
   },
   "include": ["src", "tailwind.config.ts", "build.mts"]
 }
